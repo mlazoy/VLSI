@@ -65,26 +65,29 @@ FA_1: full_adder port map (Ain=>buffer_A1,
                              rst=>reset,
                              Sum=>Sum_AB(3),
                              Cout=>Carry_out);   
-                              
--- renew input buffers when LSB goes for calc                             
-buffer_A1<=num_A(1);
-buffer_B1<=num_B(1);      
-
-buffer_A2<=num_A(2) & buffer_A2(1);
-buffer_B2<=num_B(2) & buffer_B2(1);
-
-buffer_A3<=num_A(3) & buffer_A3(2) & buffer_A3(1);
-buffer_B3<=num_B(3) & buffer_B3(2) & buffer_B3(1);
-
-tmp_cin<=tmp_cout(2) & tmp_cout(1) & tmp_cout(0);
-
---result has been shifted to LSB through pipeline
-Sum_AB(2 downto 0)<=tmp_S2(0) & tmp_S1(0) & tmp_S0(0);
-
--- shift sum registers to make space for next calc in MSB
-tmp_S0<='0' & tmp_S0(3 downto 1);
-tmp_S1<='0' & tmp_S1(2 downto 1);
-tmp_S2<='0' & tmp_S2(1);
-
+                             
+process(pulse) begin   
+    if rising_edge(pulse) then                           
+        -- renew input buffers when LSB goes for calc                             
+        buffer_A1<=num_A(1);
+        buffer_B1<=num_B(1);      
+        
+        buffer_A2<=num_A(2) & buffer_A2(1);
+        buffer_B2<=num_B(2) & buffer_B2(1);
+        
+        buffer_A3<=num_A(3) & buffer_A3(2) & buffer_A3(1);
+        buffer_B3<=num_B(3) & buffer_B3(2) & buffer_B3(1);
+        
+        tmp_cin<=tmp_cout(2) & tmp_cout(1) & tmp_cout(0);
+        
+        --result has been shifted to LSB through pipeline
+        Sum_AB(2 downto 0)<=tmp_S2(0) & tmp_S1(0) & tmp_S0(0);
+        
+        -- shift sum registers to make space for next calc in MSB
+        tmp_S0<='0' & tmp_S0(3 downto 1);
+        tmp_S1<='0' & tmp_S1(2 downto 1);
+        tmp_S2<='0' & tmp_S2(1);
+   end if;
+end process;
 
 end Pipeline;
