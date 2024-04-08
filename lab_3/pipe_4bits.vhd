@@ -24,8 +24,7 @@ signal buffer_A2, buffer_B2: std_logic_vector(1 downto 0);
 signal buffer_A3, buffer_B3: std_logic_vector(2 downto 0);
 
 --carry registers
-signal tmp_cout: std_logic_vector(3 downto 0);
-signal tmp_cin: std_logic_vector(2 downto 0);
+signal tmp_cout, tmp_cin: std_logic_vector(2 downto 0);
 
 --sum registers
 signal tmp_S0: std_logic_vector(3 downto 0);
@@ -65,7 +64,7 @@ FA_1: full_adder port map (Ain=>buffer_A1,
                              clk=>pulse,
                              rst=>reset,
                              Sum=>Sum_AB(3),
-                             Cout=>tmp_cout(3));   
+                             Cout=>Carry_out);   
                               
 -- renew input buffers when LSB goes for calc                             
 buffer_A1<=num_A(1);
