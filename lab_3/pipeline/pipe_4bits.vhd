@@ -32,7 +32,7 @@ signal tmp_S1: std_logic_vector(2 downto 0);
 signal tmp_S2: std_logic_vector(1 downto 0);
 
 --carries
-signal tmp_cin, tmp_cout: std_logic_vector(2 downto 0);
+signal tmp_carry: std_logic_vector(2 downto 0);
 
 begin
 
@@ -42,25 +42,25 @@ FA_0: full_adder port map(  A=>Ain(0),
                             Cin=>Carry_in,
                             clk=>CLK,
                             Sum=>tmp_S0(0),
-                            Cout=>tmp_cout(0));
+                            Cout=>tmp_carry(0));
                             
 FA_1: full_adder port map(  A=>buffer_A1,
                             B=>buffer_B1,
-                            Cin=>tmp_cin(0),
+                            Cin=>tmp_carry(0),
                             clk=>CLK,
                             Sum=>tmp_S1(0),
-                            Cout=>tmp_cout(1));  
+                            Cout=>tmp_carry(1));  
                                
 FA_2: full_adder port map(  A=>buffer_A2(0),
                             B=>buffer_B2(0),
-                            Cin=>tmp_cin(1),
+                            Cin=>tmp_carry(1),
                             clk=>CLK,
                             Sum=>tmp_S2(0),
-                            Cout=>tmp_cout(2)); 
+                            Cout=>tmp_carry(2)); 
                             
 FA_3: full_adder port map(  A=>buffer_A3(0),
                             B=>buffer_B3(0),
-                            Cin=>tmp_cin(2),
+                            Cin=>tmp_carry(2),
                             clk=>CLK,
                             Sum=>Sum_AB(3),
                             Cout=>Carry_out);  
@@ -153,17 +153,5 @@ reg_S2_0: dff port map( D=>tmp_S2(0),
 reg_S2_1: dff port map( D=>tmp_S2(1),
                        clk=>CLK,
                        Q=>Sum_AB(2));  
-
---registers for inner carries
-reg_C0: dff port map ( D=>tmp_cout(0),
-                       clk=>CLK,
-                       Q=>tmp_cin(0)); 
-                                                                                                                     
-reg_C1: dff port map ( D=>tmp_cout(1),
-                       clk=>CLK,
-                       Q=>tmp_cin(1));           
-                       
-reg_C2: dff port map ( D=>tmp_cout(2),
-                       clk=>CLK,
-                       Q=>tmp_cin(2));                                                                                                               
+                                                                                                              
 end Pipeline;
