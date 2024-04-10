@@ -34,8 +34,8 @@ signal p_sum_1, p_sum_5: std_logic;
 signal p_sum_2, p_sum_4: std_logic_vector(1 downto 0);
 signal p_sum_3: std_logic_vector(2 downto 0);
 
-signal carry_row_0, carry_row_1, carry_row_2, carry_row_3: std_logic_vector(3 downto 0);
-signal delayed_carry: std_logic_vector(2 downto 0);
+signal carry_row_0, carry_row_1, carry_row_2, carry_row_3: std_logic_vector(2 downto 0);
+signal forward_carry_0, forward_carry_1, forward_carry_2: std_logic_vector(1 downto 0);
 
 begin
 --A0*B0
@@ -79,7 +79,7 @@ FA_30: full_adder port map (
     Cin=>carry_row_0(2),
     clk=>pulse,
     Sum=>p_sum_3(0),
-    Cout=>carry_row_0(3)
+    Cout=>forward_carry_0(0)
 );
 
 --A0*B1
@@ -119,11 +119,11 @@ FA_21: full_adder port map (
 a3b1 <= buffer_A3(4) and buffer_B1(4);
 FA_31: full_adder port map (
     A=>a3b1,
-    B=>delayed_carry(0), 
+    B=>forward_carry_0(1), 
     Cin=>carry_row_1(2),
     clk=>pulse,
     Sum=>p_sum_4(0),
-    Cout=>carry_row_1(3)
+    Cout=>forward_carry_1(0)
 );
 
 --A0*B2
@@ -163,11 +163,11 @@ FA_22: full_adder port map (
 a3b2 <= buffer_A3(6) and buffer_B2(6);
 FA_32: full_adder port map (
     A=>a3b2,
-    B=>delayed_carry(1),
+    B=>forward_carry_1(1),
     Cin=>carry_row_2(2),
     clk=>pulse,
     Sum=>p_sum_5,
-    Cout=>carry_row_2(3)
+    Cout=>forward_carry_2(0)
 );
 
 --A0*B3
@@ -207,7 +207,7 @@ FA_23: full_adder port map (
 a3b3 <= buffer_A3(8) and buffer_B3(8);
 FA_33: full_adder port map (
     A=>a3b3,
-    B=>delayed_carry(2),
+    B=>forward_carry_2(1),
     Cin=>carry_row_3(2),
     clk=>pulse,
     Sum=>prod(6),
@@ -250,8 +250,11 @@ process(pulse) begin
         tmp_prod_4(2 downto 1)<=tmp_prod_4(1 downto 0);
         tmp_prod_5(1)<=tmp_prod_5(0);
         
-        --update delayed carry
-        delayed_carry<=carry_row_2(3) & carry_row_1(3) & carry_row_0(3);
+        --update forward carry registers
+        forward_carry_0(1)<=forward_carry_0(0);
+        forward_carry_1(1)<=forward_carry_1(0);
+        forward_carry_2(1)<=forward_carry_2(0);
+        
  
         
     end if;
