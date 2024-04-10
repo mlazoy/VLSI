@@ -230,17 +230,6 @@ process(pulse) begin
         buffer_B1<=buffer_B1(7 downto 0) & num_B(1);
         buffer_B2<=buffer_B2(7 downto 0) & num_B(2);
         buffer_B3<=buffer_B3(7 downto 0) & num_B(3);
-
-        --shift all buffers and tmp_prod signals right
-        buffer_A0(8 downto 1)<=buffer_A0(7 downto 0);
-        buffer_A1(8 downto 1)<=buffer_A1(7 downto 0);
-        buffer_A2(8 downto 1)<=buffer_A2(7 downto 0);
-        buffer_A3(8 downto 1)<=buffer_A3(7 downto 0);
-    
-        buffer_B0(8 downto 1)<=buffer_B0(7 downto 0);
-        buffer_B1(8 downto 1)<=buffer_B1(7 downto 0);
-        buffer_B2(8 downto 1)<=buffer_B2(7 downto 0);
-        buffer_B3(8 downto 1)<=buffer_B3(7 downto 0);
         
         --shift saved results
         tmp_prod_0(9 downto 1)<=tmp_prod_0(8 downto 0);
