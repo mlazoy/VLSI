@@ -20,7 +20,7 @@ signal a3b0, a2b0, a1b0, a0b0,
         a3b3, a2b3, a1b3, a0b3 : std_logic;
 
 
-signal buffer_A0, buffer_A1, buffer_A2, buffer_A3,
+signal buffer_A0, buffer_A1, buffer_A2, buffer_A3, 
         buffer_B0, buffer_B1, buffer_B2, buffer_B3: std_logic_vector(8 downto 0);
 
 signal tmp_prod_0: std_logic_vector(9 downto 0);
@@ -35,6 +35,7 @@ signal p_sum_2, p_sum_4: std_logic_vector(1 downto 0);
 signal p_sum_3: std_logic_vector(2 downto 0);
 
 signal carry_row_0, carry_row_1, carry_row_2, carry_row_3: std_logic_vector(3 downto 0);
+signal delayed_carry: std_logic_vector(2 downto 0);
 
 begin
 --A0*B0
@@ -71,7 +72,7 @@ FA_20: full_adder port map (
 );
 
 --A3*B0
-a2b0 <= buffer_A3(2) and buffer_B0(2);
+a3b0 <= buffer_A3(2) and buffer_B0(2);
 FA_30: full_adder port map (
     A=>a3b0,
     B=>'0',
@@ -118,7 +119,7 @@ FA_21: full_adder port map (
 a3b1 <= buffer_A3(4) and buffer_B1(4);
 FA_31: full_adder port map (
     A=>a3b1,
-    B=>carry_row_0(3), 
+    B=>delayed_carry(0), 
     Cin=>carry_row_1(2),
     clk=>pulse,
     Sum=>p_sum_4(0),
@@ -162,7 +163,7 @@ FA_22: full_adder port map (
 a3b2 <= buffer_A3(6) and buffer_B2(6);
 FA_32: full_adder port map (
     A=>a3b2,
-    B=>carry_row_1(3),
+    B=>delayed_carry(1),
     Cin=>carry_row_2(2),
     clk=>pulse,
     Sum=>p_sum_5,
@@ -206,7 +207,7 @@ FA_23: full_adder port map (
 a3b3 <= buffer_A3(8) and buffer_B3(8);
 FA_33: full_adder port map (
     A=>a3b3,
-    B=>carry_row_2(3),
+    B=>delayed_carry(2),
     Cin=>carry_row_3(2),
     clk=>pulse,
     Sum=>prod(6),
@@ -218,6 +219,7 @@ process(pulse) begin
         --result
         prod(5 downto 0)<=tmp_prod_5(1) & tmp_prod_4(2) & tmp_prod_3(3) & tmp_prod_2(5) & tmp_prod_1(7) & tmp_prod_0(9);
     
+
         --shift all buffers and tmp_prod signals right and get new input values
         buffer_A0<=buffer_A0(7 downto 0) & num_A(0);
         buffer_A1<=buffer_A1(7 downto 0) & num_A(1);
@@ -228,13 +230,28 @@ process(pulse) begin
         buffer_B1<=buffer_B1(7 downto 0) & num_B(1);
         buffer_B2<=buffer_B2(7 downto 0) & num_B(2);
         buffer_B3<=buffer_B3(7 downto 0) & num_B(3);
+
+        --shift all buffers and tmp_prod signals right
+        buffer_A0(8 downto 1)<=buffer_A0(7 downto 0);
+        buffer_A1(8 downto 1)<=buffer_A1(7 downto 0);
+        buffer_A2(8 downto 1)<=buffer_A2(7 downto 0);
+        buffer_A3(8 downto 1)<=buffer_A3(7 downto 0);
     
+        buffer_B0(8 downto 1)<=buffer_B0(7 downto 0);
+        buffer_B1(8 downto 1)<=buffer_B1(7 downto 0);
+        buffer_B2(8 downto 1)<=buffer_B2(7 downto 0);
+        buffer_B3(8 downto 1)<=buffer_B3(7 downto 0);
+        
+        --shift saved results
         tmp_prod_0(9 downto 1)<=tmp_prod_0(8 downto 0);
         tmp_prod_1(7 downto 1)<=tmp_prod_1(6 downto 0);
         tmp_prod_2(5 downto 1)<=tmp_prod_2(4 downto 0);
         tmp_prod_3(3 downto 1)<=tmp_prod_3(2 downto 0);
         tmp_prod_4(2 downto 1)<=tmp_prod_4(1 downto 0);
         tmp_prod_5(1)<=tmp_prod_5(0);
+        
+        --update delayed carry
+        delayed_carry<=carry_row_2(3) & carry_row_1(3) & carry_row_0(3);
  
         
     end if;
