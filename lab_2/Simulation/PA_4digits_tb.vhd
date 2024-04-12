@@ -10,7 +10,7 @@ use ieee.std_logic_unsigned.all;
 entity dig4_adder_tb is
 end dig4_adder_tb;
 
-architecture Behavioral of dig4_adder_tb is
+architecture Supertest of dig4_adder_tb is
 
 component digital4_adder is
     port (A1,A2,A3,A4,
@@ -20,6 +20,7 @@ component digital4_adder is
 end component;
 
 signal A1_tb, A2_tb, A3_tb, A4_tb, B1_tb, B2_tb, B3_tb, B4_tb, S1_tb, S2_tb, S3_tb, S4_tb: std_logic_vector(3 downto 0);
+signal num_A, num_B, result: std_logic_vector(15 downto 0);
 signal C_total_tb: std_logic;
 
 begin
@@ -42,6 +43,8 @@ sim: process
 begin
 for i in 0 to 9999 loop
     for j in 0 to 9999 loop
+        num_A<=std_logic_vector(to_unsigned(i,16));
+        num_B<=std_logic_vector(to_unsigned(j,16));
         A1_tb<=std_logic_vector(to_unsigned(i mod 10,4));
         B1_tb<=std_logic_vector(to_unsigned(j mod 10,4));
         A2_tb<=std_logic_vector(to_unsigned((i/10) mod 10,4));
@@ -50,7 +53,7 @@ for i in 0 to 9999 loop
         B3_tb<=std_logic_vector(to_unsigned((i/100) mod 10,4));
         A4_tb<=std_logic_vector(to_unsigned((i/1000) mod 10,4));
         B4_tb<=std_logic_vector(to_unsigned((i/1000) mod 10,4));
-        
+        result<=S4_tb & S3_tb & S2_tb & S1_tb;
         wait for 10ns;
     end loop;
 end loop;
@@ -58,4 +61,4 @@ wait;
 end process;
 
 
-end Behavioral;
+end Supertest;
