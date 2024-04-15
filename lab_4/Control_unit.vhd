@@ -21,6 +21,7 @@ begin
                 mac_init<='1';
             else
                 up_counter <= up_counter + 1;
+                mac_init<='0';
             end if;
 
             rom_address <= up_counter;
