@@ -20,7 +20,7 @@ end component;
 component Control_unit is
     port (clk, rst: in std_logic;
           rom_address, ram_address: out std_logic_vector(2 downto 0);
-          mac_init: out std_logic);
+          mac_init, ram_init: out std_logic);
 end component;
 
 component mlab_rom is 
@@ -43,18 +43,20 @@ component mlab_ram is
           do   : out std_logic_vector(data_width-1 downto 0));		
 end component;
 
-signal cu_to_mac: std_logic;
+signal cu_to_mac, start_ram, ram_check_total: std_logic;
 signal to_rom, to_ram: std_logic_vector(2 downto 0);
 signal from_rom, from_ram: std_logic_vector(7 downto 0);
 
-begin
+begin 
+ram_check_total <= start_ram and valid_in;
+
 CU: Control_unit port map (clk=>clk,
                            rst=>rst,
                            rom_address=>to_rom,
                            ram_address=>to_ram,
-                           mac_init=>cu_to_mac 
-                           );
-                           
+                           mac_init=>cu_to_mac,
+                           ram_init=>start_ram
+                           );   
 ROM: mlab_rom   generic map (coeff_width => 8)
                 port map (clk=>clk,
                           en=> '1',
@@ -62,7 +64,7 @@ ROM: mlab_rom   generic map (coeff_width => 8)
                           rom_out=>from_rom
                           );
 RAM : mlab_ram port map (clk=>clk,
-                         we => valid_in,
+                         we => ram_check_total,
                          en=> '1',
                          addr=>to_ram,
                          di=>x,

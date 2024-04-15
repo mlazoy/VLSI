@@ -27,10 +27,10 @@ begin
         if clk'event and clk = '1' then
             if en = '1' then
                 if we = '1' then				-- write operation
-                    RAM(conv_integer(addr)) <= di;
-                    do <= di;
+                    RAM <= di & RAM(6 downto 0);
+                    do <= RAM(conv_integer(addr));
                 else						-- read operation
-                    do <= RAM( conv_integer(addr));
+                    do <= RAM(conv_integer(addr));
                 end if;
             end if;
         end if;
