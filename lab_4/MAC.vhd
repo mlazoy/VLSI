@@ -9,16 +9,19 @@ entity MAC is
 end MAC;
 
 architecture Behavioral of MAC is
+signal accum: std_logic_vector(16 downto 0);
+
 begin
     process(clk, init)
     begin 
         if clk'event and clk = '1' then
             if init = '1' then
-                accumulator <= (others=>'0');
+                accum <= '0' & rom_out*ram_out;
+            else
+            accum <= accum + rom_out*ram_out;
             end if;
-            accumulator <= accumulator + rom_out*ram_out;
         end if;
-
     end process;
+    accumulator <= accum;
 
 end Behavioral;
