@@ -9,7 +9,7 @@ entity Control_unit is
 end Control_unit;
 
 architecture Behavioral of Control_unit is
-signal up-counter: std_logic_vector(2 downto 0);
+signal up_counter: std_logic_vector(2 downto 0);
 
 begin
     process(clk, rst) 

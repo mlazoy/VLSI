@@ -5,7 +5,7 @@ use ieee.std_logic_unsigned.all;
 entity FIR is
     port (valid_in, clk, rst: in std_logic;
           x: std_logic_vector(7 downto 0);
-          valid_out: out std_logic
+          valid_out: out std_logic;
           y: out std_logic_vector(16 downto 0)); -- accumulator value of last step
 end FIR;
 
@@ -40,9 +40,5 @@ M: MAC port map (clk=>clk,
                  init=>cu_to_mac,
                  accumulator=>temp_fir
                  );
-
-if valid_out = '1' then 
-    y <= temp_fir;
-end if;
 
 end Structural;
