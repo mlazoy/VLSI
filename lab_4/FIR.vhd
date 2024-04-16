@@ -13,7 +13,7 @@ end FIR;
 architecture Structural of FIR is
 component MAC is 
     port (rom_out, ram_out: in std_logic_vector(7 downto 0);
-          clk, init: in std_logic;
+          clk, init, rst: in std_logic;
           accumulator: out std_logic_vector(16 downto 0));    
 end component;
 
@@ -75,6 +75,7 @@ RAM : mlab_ram port map (clk=>clk,
                          );                          
                                                    
 M: MAC port map (clk=>clk,
+                 rst => rst,
                  rom_out=>from_rom,
                  ram_out=>from_ram,
                  init=>cu_to_mac,
