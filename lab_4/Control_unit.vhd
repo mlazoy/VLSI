@@ -15,18 +15,25 @@ signal up_counter: std_logic_vector(2 downto 0);
 begin
     process(clk, rst) 
     begin
-        if clk'event and clk = '1' then 
-            if rst = '1' or (up_counter = 1) then
-                up_counter <= (others=>'0');
-                mac_init<='1';
-            else
-                up_counter <= up_counter + 1;
-                mac_init <= '0';
-            end if;
-            if (up_counter = 0) then
+        if rst = '1' then
+            up_counter <= (others=>'0');
+        elsif clk'event and clk = '1' then 
+            if up_counter = "000" then
                 ram_init <= '1';
-            else 
+                mac_init <= '0';
+                up_counter <= up_counter + 1;
+            elsif up_counter = "001" then
                 ram_init <= '0';
+                mac_init <= '1';
+                up_counter <= up_counter + 1;
+            elsif up_counter = "111" then
+                up_counter <= "000";
+                ram_init <= '0';
+                mac_init <= '0';
+            else 
+                up_counter <= up_counter + 1;
+                ram_init <= '0';
+                mac_init <= '0';
             end if;
 
             rom_address <= up_counter;

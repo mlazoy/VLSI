@@ -26,15 +26,18 @@ begin
     begin
         if clk'event and clk = '1' then
             if en = '1' then
-                if we = '1' then				-- write operation
-                    RAM <= di & RAM(6 downto 0);
+                if (we = '1' and addr = "111") then -- write operation
+                    RAM <= di & RAM(7 downto 1);
+                    do <= di;
+                elsif we = '1' then
+                    RAM <= di & RAM(7 downto 1);
                     do <= RAM(conv_integer(addr));
-                else						-- read operation
+                else 
                     do <= RAM(conv_integer(addr));
-                end if;
+                end if;						
             end if;
         end if;
     end process;
 
 
-end Behavioral;2
+end Behavioral;
