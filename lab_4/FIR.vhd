@@ -35,7 +35,7 @@ component mlab_ram is
 	 generic (
 		data_width : integer :=8  				
 	 );
-    port (clk  : in std_logic;
+    port (clk, rst  : in std_logic;
           we   : in std_logic;						
 		  en   : in std_logic;				
           addr : in std_logic_vector(2 downto 0);			
@@ -44,11 +44,13 @@ component mlab_ram is
 end component;
 
 signal cu_to_mac, start_ram, ram_check_total: std_logic;
-signal to_rom, to_ram: std_logic_vector(2 downto 0);
+signal to_rom, to_ram, valid_ram_addr: std_logic_vector(2 downto 0);
 signal from_rom, from_ram: std_logic_vector(7 downto 0);
 
 begin 
 ram_check_total <= start_ram and valid_in;
+valid_out <= cu_to_mac;
+valid_ram_addr <= "111" - to_ram;
 
 CU: Control_unit port map (clk=>clk,
                            rst=>rst,
@@ -64,6 +66,7 @@ ROM: mlab_rom   generic map (coeff_width => 8)
                           rom_out=>from_rom
                           );
 RAM : mlab_ram port map (clk=>clk,
+                         rst => rst,
                          we => ram_check_total,
                          en=> '1',
                          addr=>to_ram,

@@ -6,7 +6,7 @@ entity mlab_ram is
 	 generic (
 		data_width : integer :=8  				--- width of data (bits)
 	 );
-    port (clk  : in std_logic;
+    port (clk, rst : in std_logic;
           we   : in std_logic;						--- memory write enable
 			 en   : in std_logic;				--- operation enable
           addr : in std_logic_vector(2 downto 0);			-- memory address
@@ -22,9 +22,11 @@ architecture Behavioral of mlab_ram is
 begin
 
 
-    process (clk)
+    process (clk, rst)
     begin
-        if clk'event and clk = '1' then
+        if rst = '1' then
+            RAM <= (others => (others => '0'));
+        elsif clk'event and clk = '1' then
             if en = '1' then
                 if (we = '1' and addr = "111") then -- write operation
                     RAM <= di & RAM(7 downto 1);
