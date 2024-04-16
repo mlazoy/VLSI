@@ -141,8 +141,19 @@ begin
         clk_tb <= '1';
         wait for 10 ns;
     end loop;
+    
+        valid_in_tb<='0';
+        x_tb <= "01110111";
+        for i in 0 to 9 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    
+    valid_in_tb<='1';
 
-    for i in 0 to 3 loop
+    for i in 0 to 7 loop
         clk_tb <= '0';
         wait for 10 ns;
         clk_tb <= '1';
