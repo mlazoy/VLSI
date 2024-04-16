@@ -17,6 +17,7 @@ begin
     begin
         if rst = '1' then
             up_counter <= (others=>'0');
+            mac_init <= '1';
         elsif clk'event and clk = '1' then 
             if up_counter = "000" then
                 ram_init <= '1';
