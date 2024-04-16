@@ -25,7 +25,7 @@ end component;
 
 component mlab_rom is 
     generic (coeff_width : integer :=8);
-    Port ( clk : in  std_logic;
+    Port ( clk, rst : in  std_logic;
        en : in  std_logic;             
        addr : in  std_logic_vector (2 downto 0);            
        rom_out : out  std_logic_vector (coeff_width-1 downto 0));  
@@ -61,6 +61,7 @@ CU: Control_unit port map (clk=>clk,
                            );   
 ROM: mlab_rom   generic map (coeff_width => 8)
                 port map (clk=>clk,
+                          rst=>rst,
                           en=> '1',
                           addr=>to_rom,
                           rom_out=>from_rom

@@ -7,7 +7,7 @@ entity mlab_rom is
 	 generic (
 		coeff_width : integer :=8  				--- width of coefficients (bits)
 	 );
-    Port ( clk : in  STD_LOGIC;
+    Port ( clk, rst : in  STD_LOGIC;
 			  en : in  STD_LOGIC;				--- operation enable
            addr : in  STD_LOGIC_VECTOR (2 downto 0);			-- memory address
            rom_out : out  STD_LOGIC_VECTOR (coeff_width-1 downto 0));	-- output data
@@ -26,7 +26,9 @@ begin
 
     process (clk)
     begin
-        if (clk'event and clk = '1') then
+        if rst = '1' then
+            rom_out <= (others => '0');
+        elsif (clk'event and clk = '1') then
             if (en = '1') then
                 rom_out <= rdata;
             end if;
