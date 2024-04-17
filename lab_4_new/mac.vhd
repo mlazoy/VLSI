@@ -11,7 +11,6 @@ end MAC;
 
 architecture Behavioral of MAC is
 signal accum: std_logic_vector(3*N-1 downto 0);
-signal mult: std_logic_vector(2*N-1 downto 0);
 signal zeroes: std_logic_vector(N-1 downto 0):= (others=>'0');
 
 begin
@@ -21,11 +20,10 @@ begin
             accum <= (others=>'0');
         elsif clk'event and clk = '1' then
             if en='1' then
-                mult <= rom_out*ram_out;
                 if init = '1' then
-                    accum <= zeroes & mult;
+                    accum <= zeroes & rom_out*ram_out;
                 else
-                    accum <= accum + mult;
+                    accum <= accum + rom_out*ram_out;
                 end if;
             end if;
         end if;
