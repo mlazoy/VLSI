@@ -4,10 +4,9 @@ use ieee.std_logic_unsigned.all;
 
 entity FIR is
     generic (N: integer:= 8);
-    port (valid_in, clk, rst: in std_logic;
-          x: std_logic_vector(N-1 downto 0);
-          valid_out: out std_logic;
-          y: out std_logic_vector(3*N-1 downto 0)); -- accumulator value of last step
+    port (clk, rst: in std_logic;
+          A: std_logic_vector(N downto 0);
+          B: out std_logic_vector(3*N downto 0)); -- accumulator value of last step
 end FIR;
 
 architecture Structural of FIR is
@@ -48,7 +47,7 @@ begin
 
 CU: Control_unit port map (clk=>clk,
                            rst=>rst,
-                           valid_in=>valid_in,
+                           valid_in=>A(N),
                            rom_address=>to_rom,
                            ram_address=>to_ram,
                            mac_init=>cu_to_mac,
@@ -67,7 +66,7 @@ RAM : mlab_ram port map (clk=>clk,
                          we => cu_to_ram,
                          en=>global_en,
                          addr=>to_ram,
-                         di=>x,
+                         di=>A(N-1 downto 0),
                          do=>from_ram
                          );                          
                                                    
@@ -77,9 +76,9 @@ M: MAC port map (clk=>clk,
                  rom_out=>from_rom,
                  ram_out=>from_ram,
                  init=>cu_to_mac,
-                 accumulator=>y
+                 accumulator=>B(3*N-1 downto 0)
                  );
                  
-valid_out <= cu_to_mac;                 
+B(3*N) <= cu_to_mac;                 
 
 end Structural;

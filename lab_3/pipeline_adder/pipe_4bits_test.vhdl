@@ -12,7 +12,7 @@ end pipe_4bits;
 architecture Pipeline of pipe_4bits is
 component full_adder is 
     port (
-        Ain, Bin, Cin, clk : in std_logic;
+        A, B, Cin, clk : in std_logic;
         Sum, Cout : out std_logic
     );
 end component;  
@@ -25,29 +25,29 @@ signal f0_carry, f1_carry, f2_carry : std_logic;
 
 begin
 
-FA_0: full_adder port map (Ain=>num_A(0),
-                           Bin=>num_B(0),
+FA_0: full_adder port map (A=>num_A(0),
+                           B=>num_B(0),
                            Cin=>Carry_in,
                            clk=>pulse,
                            Sum=>reg1(4),
                            Cout=>f0_carry);
                            
-FA_1: full_adder port map (Ain=>reg0(0),
-                          Bin=>reg0(3),
+FA_1: full_adder port map (A=>reg0(0),
+                          B=>reg0(3),
                           Cin=>f0_carry,
                           clk=>pulse,
                           Sum=>reg2(3),
                           Cout=>f1_carry);    
     
- FA_2: full_adder port map ( Ain=>reg1(0),
-                             Bin=>reg1(2),
+ FA_2: full_adder port map ( A=>reg1(0),
+                             B=>reg1(2),
                              Cin=>f1_carry,
                              clk=>pulse,
                              Sum=>reg3(2),
                              Cout=>f2_carry);   
                                
- FA_3: full_adder port map ( Ain=>reg2(0),
-                             Bin=>reg2(1),
+ FA_3: full_adder port map ( A=>reg2(0),
+                             B=>reg2(1),
                              Cin=>f2_carry,
                              clk=>pulse,
                              Sum=>Sum_AB(3),
