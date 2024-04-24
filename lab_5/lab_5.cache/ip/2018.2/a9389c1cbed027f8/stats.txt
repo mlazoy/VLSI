@@ -1,4 +1,0 @@
-NumberHits:0
-Timestamp: Tue Apr 23 17:05:39 UTC 2024
-VLNV: user.org:user:fir_IP:1.0
-SynthRuntime: 66
