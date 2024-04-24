@@ -11,6 +11,7 @@ entity FIR is
 end FIR;
 
 architecture Structural of FIR is
+
 component MAC is 
     port (rom_out, ram_out: in std_logic_vector(N-1 downto 0);
           clk, init, rst, en: in std_logic;
