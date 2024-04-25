@@ -394,7 +394,7 @@ begin
 	-- Add user logic here
     
     fir_zybo: FIR port map (clk=>S_AXI_ACLK,
-                            rst=>S_AXI_ARESETN,
+                            rst=>slv_reg0(N+1),
                             valid_in=>slv_reg0(0),
                             x=>slv_reg0(N downto 1),
                             y=>slv_reg1(3*N downto 1),
