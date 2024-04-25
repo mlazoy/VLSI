@@ -12,14 +12,23 @@ end Control_unit;
 
 architecture Behavioral of Control_unit is
 signal up_counter: std_logic_vector(2 downto 0):= (others=>'0');
-signal store_rising_edge_of_valid_in: std_logic;
+signal store_rising_edge_of_valid_in, dff_d, rst_d: std_logic;
+
+component dff is 
+    port (D,clk, rst: in std_logic;
+          Q: out std_logic);
+end component;
 
 begin
-    process(clk, rst, valid_in) 
+    rst_d <= not up_counter(2) and up_counter(1) and not up_counter(0);
+    store_rising_edge_valid_in :  dff port map (
+        D => '1',
+        clk => valid_in,
+        rst => rst_d,
+        Q => store_rising_edge_of_valid_in
+    );
+    process(clk, rst) 
     begin
-        if valid_in'event and valid_in='1' then
-            store_rising_edge_of_valid_in <= '1'; 
-        end if;
         if rst = '1' then
             up_counter <= (others=>'0');
             freeze<='1';      
@@ -34,7 +43,6 @@ begin
             elsif store_rising_edge_of_valid_in = '1' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
-                store_rising_edge_of_valid_in <= '0';
             elsif store_rising_edge_of_valid_in = '0' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
