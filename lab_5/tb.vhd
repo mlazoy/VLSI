@@ -157,9 +157,9 @@ begin
         wait for 10 ns;
     end loop;
 
-    rst_tb <= '1';
-    wait for 10 ns;
-    rst_tb <= '0';
+--    rst_tb <= '1';
+--    wait for 10 ns;
+--    rst_tb <= '0';
 
     x_tb <= "00110101";
     valid_in_tb<='1';

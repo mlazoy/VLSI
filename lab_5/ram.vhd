@@ -34,7 +34,9 @@ begin
                     do <= di;
                 else
                     do <= RAM(conv_integer(addr));
-                end if;						
+                end if;	
+            else 
+                do<=(others=>'0');					
             end if;
         end if;
     end process;

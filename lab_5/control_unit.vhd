@@ -22,7 +22,7 @@ begin
         end if;
         if rst = '1' then
             up_counter <= (others=>'0');
-            freeze<='1';`       
+            freeze<='1';      
         elsif clk'event and clk='1' then
             if store_rising_edge_of_valid_in = '1' and up_counter=0 then 
                 ram_init<='1';
@@ -31,14 +31,13 @@ begin
             elsif store_rising_edge_of_valid_in = '0' and up_counter=0 then
                 ram_init<='0';
                 mac_init<='0';
-                freeze<='1';
             elsif store_rising_edge_of_valid_in = '1' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
                 store_rising_edge_of_valid_in <= '0';
             elsif store_rising_edge_of_valid_in = '0' and up_counter=1 then 
                 ram_init<='0';
-                mac_init<='0';
+                mac_init<='1';
                 freeze <= '0';
             else 
                 ram_init<='0';
