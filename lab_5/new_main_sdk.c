@@ -10,7 +10,7 @@
 const unsigned test_values[12] = {8,4,34,6,50,9,31,7,12,42,17,15};
 
 void fir_reset(){
-	FIR_AXI_mWriteReg(BaseAddress, 0, 0);
+	FIR_AXI_mWriteReg(BaseAddress, 0, (u32)1);
 	sleep(1);
 }
 
@@ -20,10 +20,10 @@ void send_fir_data(unsigned x){
 	unsigned valid_in = 0, reset = 0;
 	A = reset | (valid_in <<1) | (x<<2);
 	printf("Input data A: %u\n",A);
-	FIR_AXI_mWriteReg(BaseAddress, 0, A);
+	FIR_AXI_mWriteReg(BaseAddress, 0, (u32)A);
 	valid_in = 1;
 	A = reset | (valid_in<<1) | (x<<2);
-	FIR_AXI_mWriteReg(BaseAddress, 0, A);
+	FIR_AXI_mWriteReg(BaseAddress, 0, (u32)A);
 	printf("Input data A: %u\n",A);
 }
 
