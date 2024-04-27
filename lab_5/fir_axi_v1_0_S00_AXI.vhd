@@ -239,7 +239,7 @@ begin
 	              end if;
 	            end loop;
 	          when b"01" =>
-	          	null;
+	           null;
 --	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 --	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 --	                -- Respective byte enables are asserted as per write strobes                   
