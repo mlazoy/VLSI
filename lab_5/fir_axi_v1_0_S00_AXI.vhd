@@ -238,7 +238,8 @@ begin
 	                slv_reg0(byte_index*8+7 downto byte_index*8) <= S_AXI_WDATA(byte_index*8+7 downto byte_index*8);
 	              end if;
 	            end loop;
---	          when b"01" =>
+	          when b"01" =>
+	          	null;
 --	            for byte_index in 0 to (C_S_AXI_DATA_WIDTH/8-1) loop
 --	              if ( S_AXI_WSTRB(byte_index) = '1' ) then
 --	                -- Respective byte enables are asserted as per write strobes                   
