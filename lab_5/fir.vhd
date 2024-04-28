@@ -5,7 +5,7 @@ use ieee.std_logic_unsigned.all;
 entity FIR is
     generic (N: integer:= 8);
     port (clk, rst, valid_in: in std_logic;
-          x: std_logic_vector(N-1 downto 0);
+          x: in std_logic_vector(N-1 downto 0);
           y: out std_logic_vector(3*N-1 downto 0); -- accumulator value of last step
           valid_out: out std_logic); 
 end FIR;
