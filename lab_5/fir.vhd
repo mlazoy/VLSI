@@ -81,6 +81,6 @@ M: MAC port map (clk=>clk,
                  accumulator=>y
                  );
                  
-valid_out <= cu_to_mac;                 
+valid_out <= (cu_to_mac or  (not global_en));                 
 
 end Structural;
