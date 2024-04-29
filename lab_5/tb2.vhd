@@ -40,6 +40,14 @@ begin
     clk_tb<='1';
     wait for 10ns;
     rst_tb<='0';
+
+    valid_in_tb <= '0'
+    clk_tb<='0';
+    wait for 10ns;
+    clk_tb<='1';
+    wait for 10ns;
+    rst_tb<='0';
+
     
     x_tb <= "00001000";
     valid_in_tb<='1';
@@ -221,6 +229,13 @@ begin
     end loop;
     valid_in_tb <= '1';
     for i in 0 to 3 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 15 loop
         clk_tb <= '0';
         wait for 10 ns;
         clk_tb <= '1';
