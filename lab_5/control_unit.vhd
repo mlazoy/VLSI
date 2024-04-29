@@ -12,7 +12,7 @@ end Control_unit;
 
 architecture Behavioral of Control_unit is
 signal up_counter: std_logic_vector(2 downto 0):= (others=>'0');
-signal store_rising_edge_of_valid_in, dff_d, rst_d: std_logic;
+signal rising_valid_in, prev_valid_in, prev_rising_valid_in, not_used_valid_in, not_used_D, rst_dff: std_logic;
 
 component dff is 
     port (D,clk, rst: in std_logic;
@@ -20,30 +20,44 @@ component dff is
 end component;
 
 begin
-    rst_d <= not up_counter(2) and up_counter(1) and not up_counter(0);
-    store_rising_edge_valid_in :  dff port map (
-        D => '1',
-        clk => valid_in,
-        rst => rst_d,
-        Q => store_rising_edge_of_valid_in
-    );
+                            
+valid_in_dff: dff port map (clk=>clk,
+                          rst=>rst,
+                          D=>valid_in,
+                          Q=>prev_valid_in
+                          );
+                          
+rising_edge_dff: dff port map (clk=>clk,
+                               rst=>rst,
+                               D=>rising_valid_in,
+                               Q=>prev_rising_valid_in
+                               );
+                               
+rst_dff<= rst or (up_counter(0) and not up_counter(1) and not up_counter(2));                         
+not_used_D<=(valid_in or not_used_valid_in);                             
+not_used_dff: dff port map(clk=>clk,
+                           rst=>rst_dff,
+                           D=>not_used_D,
+                           Q=>not_used_valid_in
+                           );
+                                                
     process(clk, rst) 
     begin
         if rst = '1' then
             up_counter <= (others=>'0');
             freeze<='1';      
         elsif clk'event and clk='1' then
-            if store_rising_edge_of_valid_in = '1' and up_counter=0 then 
+            if rising_valid_in = '1' and up_counter=0 then 
                 ram_init<='1';
                 mac_init<='0';
                 freeze<='1';
-            elsif store_rising_edge_of_valid_in = '0' and up_counter=0 then
+            elsif rising_valid_in = '0' and up_counter=0 then
                 ram_init<='0';
                 mac_init<='0';
-            elsif store_rising_edge_of_valid_in = '1' and up_counter=1 then 
+            elsif prev_rising_valid_in = '1' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
-            elsif store_rising_edge_of_valid_in = '0' and up_counter=1 then 
+            elsif prev_rising_valid_in = '0' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
                 freeze <= '0';
@@ -63,6 +77,19 @@ begin
         end if;
 
     end process;
+    
+    process(clk,rst)
+    begin
+    if clk'event and clk='1' then 
+        if ((valid_in='1' and prev_valid_in='0') or not_used_valid_in='1') then
+            rising_valid_in<='1';
+        else 
+            rising_valid_in<='0';
+        end if;
+    end if;
+    
+    end process;
+
 
 
 end Behavioral;
