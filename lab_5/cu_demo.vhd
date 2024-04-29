@@ -12,31 +12,27 @@ end Control_unit;
 
 architecture Behavioral of Control_unit is
 signal up_counter: std_logic_vector(2 downto 0):= (others=>'0');
-signal valid_in_previous, rising_valid_in, rst_d, d_d, final_stored_valid_in : std_logic;
+signal current_valid_ins, prev_valid_ins: std_logic_vector (7 downto 0);
+signal rising_valid_in : std_logic;
 
-component dff is 
-    port (D,clk, rst: in std_logic;
-          Q: out std_logic);
+component dff8 is
+    port (
+        D : in std_logic_vector(7 downto 0);
+        clk, rst: in std_logic;
+        Q: out std_logic_vector(7 downto 0)
+    );
 end component;
 
 begin
-    valid_in_buffer : dff
+    current_valid_ins <= prev_valid_ins(6 downto 0) & valid_in;
+    valid_in_buffer : dff8
     port map (
-        D => valid_in,
+        D => current_valid_ins,
         clk => clk,
         rst => rst,
-        Q => valid_in_previous
+        Q => prev_valid_ins
     );
-    rising_valid_in <= valid_in and not valid_in_previous;
-    d_d <= rising_valid_in or final_stored_valid_in;
-
-    rst_d <= (not up_counter(2) and up_counter(1) and not up_counter(0)) or rst;
-    store_rising : dff port map (
-        D => d_d,
-        clk => clk,
-        rst => rst_d,
-        Q => final_stored_valid_in
-    );
+    rising_valid_in <= (valid_in and not prev_valid_ins(0)) or (prev_valid_ins(0) and not prev_valid_ins(1)) or (prev_valid_ins(1) and not prev_valid_ins(2)) or (prev_valid_ins(2) and not prev_valid_ins(3)) or (prev_valid_ins(3) and not prev_valid_ins(4)) or (prev_valid_ins(4) and not prev_valid_ins(5)) or (prev_valid_ins(5) and not prev_valid_ins(6)) or (prev_valid_ins(6) and not prev_valid_ins(7));
     
     process(clk, rst) 
     begin
@@ -44,17 +40,17 @@ begin
             up_counter <= (others=>'0');
             freeze<='1';    
         elsif clk'event and clk='1' then
-            if (final_stored_valid_in or rising_valid_in) = '1' and up_counter=0 then 
+            if rising_valid_in = '1' and up_counter=0 then 
                 ram_init<='1';
                 mac_init<='0';
                 freeze<='1';
-            elsif (final_stored_valid_in or rising_valid_in) = '0' and up_counter=0 then
+            elsif rising_valid_in = '0' and up_counter=0 then
                 ram_init<='0';
                 mac_init<='0';
-            elsif (final_stored_valid_in or rising_valid_in) = '1' and up_counter=1 then 
+            elsif rising_valid_in = '1' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
-            elsif (final_stored_valid_in or rising_valid_in) = '0' and up_counter=1 then 
+            elsif rising_valid_in = '0' and up_counter=1 then 
                 ram_init<='0';
                 mac_init<='1';
                 freeze <= '0';

@@ -1,0 +1,195 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+entity FIR_tb is
+end FIR_tb;
+
+architecture fir_test of FIR_tb is
+
+constant N: integer:=8;
+
+component FIR is
+    port (clk, rst, valid_in: in std_logic;
+      x: in std_logic_vector(N-1 downto 0);
+      y: out std_logic_vector(3*N-1 downto 0); -- accumulator value of last step
+      valid_out: out std_logic); 
+end component;
+
+signal valid_in_tb, clk_tb, rst_tb, valid_out_tb : std_logic;
+signal x_tb : std_logic_vector(N-1 downto 0);
+signal y_tb : std_logic_vector(3*N-1 downto 0);
+
+begin
+
+uut: FIR 
+port map (
+    valid_in => valid_in_tb,
+    clk => clk_tb,
+    rst => rst_tb,
+    x => x_tb,
+    valid_out => valid_out_tb,
+    y => y_tb
+);
+
+testing: process
+begin
+    --reset
+    rst_tb<='1';
+    clk_tb<='0';
+    wait for 10ns;
+    clk_tb<='1';
+    wait for 10ns;
+    rst_tb<='0';
+    clk_tb<='0';
+    wait for 10ns;
+    clk_tb<='1';
+    wait for 10ns;
+
+    --1
+    x_tb <= "00110111";
+    valid_in_tb<='0';
+    for i in 0 to 3 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 3 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    --2
+    x_tb <= "01000010";
+    valid_in_tb<='0';
+    for i in 0 to 2 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 4 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    --3
+    x_tb <= "01011010";
+    valid_in_tb<='0';
+    for i in 0 to 1 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 5 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    --4
+    x_tb <= "00000010";
+    valid_in_tb<='0';
+    for i in 0 to 2 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 4 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    --5
+    x_tb <= "01000010";
+    valid_in_tb<='0';
+    for i in 0 to 0 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 6 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    --6
+    x_tb <= "00001010";
+    valid_in_tb<='0';
+    for i in 0 to 6 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+    valid_in_tb <= '1';
+    for i in 0 to 0 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    for i in 0 to 23 loop
+        clk_tb <= '0';
+        wait for 10 ns;
+        clk_tb <= '1';
+        wait for 10 ns;
+    end loop;
+
+    wait;
+end process testing;
+end fir_test;
