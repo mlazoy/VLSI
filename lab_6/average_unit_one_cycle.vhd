@@ -3,7 +3,15 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-type grid3x3 is array (8 downto 0) of std_logic_vector(7 downto 0); --3x3 grid into 9-column array
+package custom_types_pkg is
+    -- Define the custom type
+    type grid3x3 is array (0 to 8) of std_logic_vector(7 downto 0);
+end package custom_types_pkg;
+
+-- Use the package in your entity
+library ieee;
+use ieee.std_logic_1164.all;
+use work.custom_types_pkg.all; -- Use your package here
 
 entity average_unit is
     port (
@@ -29,7 +37,6 @@ end component;
 
 signal pxl_11, pxl_12, pxl_13, pxl_14, pxl_21, pxl_22, pxl_23, pxl_24: std_logic_vector(7 downto 0);
 signal tmp_sum_1, tmp_sum_2: std_logic_vector(9 downto 0);
-signal X_pixel, prev_pixel_case: std_logic_vector(7 downto 0);
 
 begin
 
@@ -70,6 +77,11 @@ begin
         pxl_22<=pixel_grid(5);
         pxl_23<=(others=>'0');
         pxl_24<=(others=>'0');  
+
+        -- /2 is 1 right shift
+        R_avg<=tmp_sum_1(8 downto 1);
+        G_avg<=pixel_grid(4);
+        B_avg<=tmp_sum_2(8 downto 1);
         
         when "01" => --case ii
         pxl_11<=pixel_grid(3);
@@ -82,6 +94,10 @@ begin
         pxl_23<=(others=>'0');
         pxl_24<=(others=>'0');
 
+        R_avg<=tmp_sum_1(8 downto 1);
+        G_avg<=pixel_grid(4);
+        B_avg<=tmp_sum_2(8 downto 1);
+
         when "10" => --case iii
         pxl_11<=pixel_grid(1);
         pxl_12<=pixel_grid(3);
@@ -92,6 +108,11 @@ begin
         pxl_22<=pixel_grid(2);
         pxl_23<=pixel_grid(6);
         pxl_24<=pixel_grid(8);
+
+        -- /4 is 2 right shifts
+        R_avg<=pixel_grid(4);
+        G_avg<=tmp_sum_1(9 downto 2);
+        B_avg<=tmp_sum_2(9 downto 2);
         
         when "11" => --case iv
         pxl_11<=pixel_grid(0);
@@ -103,36 +124,14 @@ begin
         pxl_22<=pixel_grid(3);
         pxl_23<=pixel_grid(5);
         pxl_24<=pixel_grid(7);
+
+        R_avg<=tmp_sum_1(9 downto 2);
+        G_avg<=tmp_sum_2(9 downto 2);
+        B_avg<=pixel_grid(4);
         
         when others =>
         null;   
         end case;  
-        
-        case prev_pixel_case is
-            when ("00" or "01") =>
-            -- /2 is 1 right shift
-            R_avg<=tmp_sum_1(8 downto 1);
-            G_avg<=X_pixel;
-            B_avg<=tmp_sum_2(8 downto 1);
-            
-            when "10" =>
-            -- /4 is 2 right shifts
-            R_avg<=X_pixel;
-            G_avg<=tmp_sum_1(9 downto 2);
-            B_avg<=tmp_sum_2(9 downto 2);
-            
-            when "11" =>
-            R_avg<=tmp_sum_1(9 downto 2);
-            G_avg<=(9 downto 2);
-            B_avg<=X_pixel;
-            
-            when others =>
-            null;
-        end case;
-        
-    X_pixel<=pixel_grid(4); --save this to pass it on output when adders are ready in next cycle
-    prev_pixel_case<=pixel_case;
-        
     end if;
 end process;
 
