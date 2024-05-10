@@ -17,7 +17,7 @@ signal up_count: std_logic_vector(N_bits-1 downto 0);
 begin
     process(clk,rst_n)
     begin
-        if rst_n='1' then
+        if rst_n='0' then                       
             cnt<=(others=>'0');
         elsif clk'event and clk='1' then
             if up_count/=conv_integer(up_limit) then 

@@ -4,7 +4,7 @@ use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
 entity average_unit is
-    port (clk, rst_n: in std_logic;
+    port (clk, rst_n, en: in std_logic;
           pixel_case: in std_logic_vector(1 downto 0); 
           R_avg, G_avg, B_avg: out std_logic_vector(7 downto 0));
 end average_unit;
@@ -52,7 +52,7 @@ process(clk,rst_n)
 begin
     if rst_n='0' then 
         pixel_grid<=(others => (others=>'0'));
-    elsif clk'event and clk='1' then 
+    elsif clk'event and clk='1' and en='1' then 
     
         case pixel_case is
         when "00" => --case i
