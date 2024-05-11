@@ -1,14 +1,24 @@
 library ieee;
 use ieee.std_logic_1164.all;
+
+package custom_types_pkg_tb is
+    -- Define the custom type
+    type grid3x3 is array (8 downto 0) of std_logic_vector(7 downto 0);
+end package custom_types_pkg_tb;
+
+-- Use the package in your entity
+library ieee;
+use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
+use work.custom_types_pkg.all; -- Use your package here
 
 entity average_unit_tb is
 end average_unit_tb;
 
 architecture average_unit_sim of average_unit_tb is
 
-type grid3x3 is array (8 downto 0) of std_logic_vector(7 downto 0); --3x3 grid into 9-column array
+--type grid3x3 is array (8 downto 0) of std_logic_vector(7 downto 0);
 
 component average_unit is
     port (
@@ -51,15 +61,11 @@ begin
     -- 99  69 148
     --153 241  39
     --203 211 152
-    pixel_grid_tb(0) <= "01100011";
-    pixel_grid_tb(1) <= "01000101";
-    pixel_grid_tb(2) <= "10010100";
-    pixel_grid_tb(3) <= "10011001";
-    pixel_grid_tb(4) <= "11110001";
-    pixel_grid_tb(5) <= "00100111";
-    pixel_grid_tb(6) <= "11001011";
-    pixel_grid_tb(7) <= "11010011";
-    pixel_grid_tb(8) <= "10011000";
+    pixel_grid_tb <= (
+    "01100011", "01000101", "10010100",
+    "10011001", "11110001", "00100111",
+    "11001011", "11010011", "10011000"
+    );
     
     for i in 0 to 3 loop
         pixel_case_tb <= std_logic_vector(to_unsigned(i, 2));
@@ -73,15 +79,11 @@ begin
     -- 28  75  14
     -- 83 254  44
     --127  21 125
-    pixel_grid_tb(0) <= "00011100";
-    pixel_grid_tb(0) <= "01001011";
-    pixel_grid_tb(0) <= "00001110";
-    pixel_grid_tb(0) <= "01010011";
-    pixel_grid_tb(0) <= "11111110";
-    pixel_grid_tb(0) <= "00101100";
-    pixel_grid_tb(0) <= "01111111";
-    pixel_grid_tb(0) <= "00010101";
-    pixel_grid_tb(0) <= "01111101";
+    pixel_grid_tb <= (
+    "00011100", "01001011", "00001110",
+    "01010011", "11111110", "00101100",
+    "01111111", "00010101", "01111101"
+    );
 
     for i in 0 to 3 loop
         pixel_case_tb <= std_logic_vector(to_unsigned(i, 2));
@@ -90,6 +92,11 @@ begin
         clk_tb <= '1';
         wait for 50 ns;
     end loop;
+    
+    clk_tb <= '0';
+    wait for 50 ns;
+    clk_tb <= '1';
+    wait for 50 ns;
 
     wait;
     end process;
