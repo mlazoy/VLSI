@@ -14,7 +14,8 @@ architecture Behavioral of finite_state_machine is
 
 component counter is
     port (clk,rst_n, stall: in std_logic;
-          cnt: out std_logic_vector(N_bits-1 downto 0));
+          cnt: out std_logic_vector(N_bits-1 downto 0);
+          up: out std_logic);
 end component;
 
 component dff2 is 
@@ -24,20 +25,22 @@ component dff2 is
 end component;
 
 signal row_cnt, pixel_cnt: std_logic_vector(N_bits-1 downto 0):=(others=>'0');
-signal counter_stall: std_logic:='0';
 signal pxl_case, prev_case: std_logic_vector(1 downto 0);
+signal row_stall, pixel_stall, row_up, pixel_up: std_logic;
 
 begin
 
 row_counter: counter port map (clk=>clk,
                                rst_n=>rst_n,
-                               stall=>counter_stall,
-                               cnt=>row_cnt);
+                               stall=>row_stall,
+                               cnt=>row_cnt,
+                               up=>row_up);
                                
 pixel_counter: counter port map (clk=>clk,
                                  rst_n=>rst_n,
-                                 stall=>counter_stall,
-                                 cnt=>pixel_cnt);   
+                                 stall=>pixel_stall,
+                                 cnt=>pixel_cnt,
+                                 up=>pixel_up);   
 
 prev_case_buffer: dff2 port map (clk=>clk,
                                 rst=>rst_n,
@@ -45,18 +48,12 @@ prev_case_buffer: dff2 port map (clk=>clk,
                                 Q=>prev_case
                                 ); 
                                  
-process(clk, rst_n)
-begin
-    if rst_n='1' then 
-        if clk'event and clk='1' then 
-            counter_stall<=(not vld_in);
-            pxl_case_in<=pxl_case;
-            pxl_case_out<=prev_case;
-        end if;
-    end if;    
 
-end process;
-
+pxl_case_in<=pxl_case;
+pxl_case_out<=prev_case;
+pixel_stall<=not vld_in;
+row_stall<=not pixel_up;
+ready_img<=(row_up and pixel_up);
                                  
 process(row_cnt, pixel_cnt)
 begin
@@ -74,13 +71,6 @@ begin
             pxl_case<="01";     --case ii
         end if; 
     end if; 
-    
-    if (row_cnt=(others=>'1') and pixel_cnt=(others=>'1')) then
-        ready_img<='1';
-    else
-        ready_img<='0';
-    end if;
-
 end process;
 
                                                             
