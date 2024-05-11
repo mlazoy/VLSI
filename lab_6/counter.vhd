@@ -13,20 +13,20 @@ end counter;
 architecture Behavioral of counter is
 
 signal up_limit: std_logic_vector(N_bits-1 downto 0):=(others=>'1');
-signal up_count: std_logic_vector(N_bits-1 downto 0);
+signal up_count: std_logic_vector(N_bits-1 downto 0):=(others=>'0');
 
 begin
     process(clk,rst_n)
     begin
         if rst_n='0' then                       
-            cnt<=(others=>'0');
+            up_count<=(others=>'0');
         elsif clk'event and clk='1' then
-            if up_count/=conv_integer(up_limit) then 
-                if stall='0' then
+            if stall='0' then
+                if up_count/=conv_integer(up_limit) then 
                     up_count<=up_count+1;
+                else
+                    up_count<=(others=>'0');
                 end if;
-            else
-                up_count<=(others=>'0');
             end if;
         end if;       
     end process;

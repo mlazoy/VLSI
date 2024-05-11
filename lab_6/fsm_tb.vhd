@@ -1,6 +1,7 @@
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+use ieee.numeric_std.all;
 
 entity FSM_tb is
 end FSM_tb;
@@ -8,7 +9,6 @@ end FSM_tb;
 architecture Behavioral of FSM_tb is
 
 component finite_state_machine is
-    generic (N_bits:integer:=5);
     port(clk, rst_n, new_img,vld_in: in std_logic;
      pxl_case_in, pxl_case_out: out std_logic_vector(1 downto 0);
      ready_img, vld_out, avg_stall: out std_logic);   
@@ -17,10 +17,10 @@ end component;
 signal clk_tb, rst_n_tb, new_img_tb, vld_in_tb, ready_img_tb, vld_out_tb, avg_stall_tb: std_logic;
 signal pxl_case_in_tb, pxl_case_out_tb: std_logic_vector(1 downto 0);
 
-constant N: integer:=5;
 
 begin
-UUT: finite_state_machine generic map (N_bits=>N)
+
+UUT: finite_state_machine 
                           port map (clk=>clk_tb,
                                     rst_n=>rst_n_tb,
                                     new_img=>new_img_tb,
