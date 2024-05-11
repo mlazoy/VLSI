@@ -26,6 +26,7 @@ end component;
 signal row_cnt, pixel_cnt: std_logic_vector(N_bits-1 downto 0):=(others=>'0');
 signal counter_stall: std_logic:='0';
 signal pxl_case, prev_case: std_logic_vector(1 downto 0);
+constant all_bits: std_logic_vector(N_bits-1 downto 0):=(others=>'1');
 
 begin
 
@@ -75,7 +76,7 @@ begin
         end if; 
     end if; 
     
-    if (row_cnt=(others=>'1') and pixel_cnt=(others=>'1')) then
+    if (row_cnt=all_bits and pixel_cnt=all_bits) then
         ready_img<='1';
     else
         ready_img<='0';
