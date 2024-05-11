@@ -3,12 +3,18 @@ use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
 
-type grid3x3 is array (8 downto 0) of std_logic_vector(7 downto 0); --3x3 grid into 9-column array
+package custom_types_pkg is
+    type grid3x3 is array (0 to 8) of std_logic_vector(7 downto 0);
+end package custom_types_pkg;
+
+library ieee;
+use ieee.std_logic_1164.all;
+use work.custom_types_pkg.all; 
 
 entity average_unit is
     port (
         clk, rst_n, en: in std_logic;
-        pixel_case: in std_logic_vector(1 downto 0); 
+        pixel_case_in, pixel_case_out: in std_logic_vector(1 downto 0); 
         pixel_grid : in grid3x3;
         R_avg, G_avg, B_avg: out std_logic_vector(7 downto 0));
 end average_unit;
@@ -16,10 +22,10 @@ end average_unit;
 architecture Behavioral of average_unit is
 
 --X at index 4
---combo1 => R = indexes 1+7,  G = X, B = indexes 3+5
---combo2 => R = indexes 3+5,  G = X, B = indexes 1+7
---combo3 => R = X, G = indexes 1+3+5+7, B = indexes 0+2+6+8
---combo4 => R = indexes 0+2+6+8, G = indexes 1+3+5+7, B = X 
+--case i => R = indexes 1+7,  G = X, B = indexes 3+5
+--case ii => R = indexes 3+5,  G = X, B = indexes 1+7
+--case iii => R = X, G = indexes 1+3+5+7, B = indexes 0+2+6+8
+--case iv => R = indexes 0+2+6+8, G = indexes 1+3+5+7, B = X 
 
 component pixel_adder is
     port(clk,rst_n: in std_logic;
@@ -29,7 +35,6 @@ end component;
 
 signal pxl_11, pxl_12, pxl_13, pxl_14, pxl_21, pxl_22, pxl_23, pxl_24: std_logic_vector(7 downto 0);
 signal tmp_sum_1, tmp_sum_2: std_logic_vector(9 downto 0);
-signal X_pixel, prev_pixel_case: std_logic_vector(7 downto 0);
 
 begin
 
@@ -59,7 +64,7 @@ begin
         
     elsif clk'event and clk='1' and en='1' then 
     
-        case pixel_case is
+        case pixel_case_in is
         when "00" => --case i
         pxl_11<=pixel_grid(1);
         pxl_12<=pixel_grid(7);
@@ -69,7 +74,7 @@ begin
         pxl_21<=pixel_grid(3);
         pxl_22<=pixel_grid(5);
         pxl_23<=(others=>'0');
-        pxl_24<=(others=>'0');  
+        pxl_24<=(others=>'0');         
         
         when "01" => --case ii
         pxl_11<=pixel_grid(3);
@@ -108,30 +113,33 @@ begin
         null;   
         end case;  
         
-        case prev_pixel_case is
-            when ("00" or "01") =>
-            -- /2 is 1 right shift
-            R_avg<=tmp_sum_1(8 downto 1);
-            G_avg<=X_pixel;
-            B_avg<=tmp_sum_2(8 downto 1);
-            
-            when "10" =>
-            -- /4 is 2 right shifts
-            R_avg<=X_pixel;
-            G_avg<=tmp_sum_1(9 downto 2);
-            B_avg<=tmp_sum_2(9 downto 2);
-            
-            when "11" =>
-            R_avg<=tmp_sum_1(9 downto 2);
-            G_avg<=(9 downto 2);
-            B_avg<=X_pixel;
-            
-            when others =>
-            null;
-        end case;
+-- output is according to previous state
+        case pixel_case_out is
+        when "00" =>
+        -- /2 is 1 right shift
+        R_avg<=tmp_sum_1(8 downto 1);
+        G_avg<=pixel_grid(4);
+        B_avg<=tmp_sum_2(8 downto 1);
+      
+        when "01" =>
+        R_avg<=tmp_sum_1(8 downto 1);
+        G_avg<=pixel_grid(4);
+        B_avg<=tmp_sum_2(8 downto 1);
         
-    X_pixel<=pixel_grid(4); --save this to pass it on output when adders are ready in next cycle
-    prev_pixel_case<=pixel_case;
+        when "10" =>
+        -- /4 is 2 right shifts
+        R_avg<=pixel_grid(4);
+        G_avg<=tmp_sum_1(9 downto 2);
+        B_avg<=tmp_sum_2(9 downto 2);
+        
+        when "11" =>
+        R_avg<=tmp_sum_1(9 downto 2);
+        G_avg<=tmp_sum_2(9 downto 2);
+        B_avg<=pixel_grid(4);
+        
+        when others =>
+        null;
+        end case;
         
     end if;
 end process;
