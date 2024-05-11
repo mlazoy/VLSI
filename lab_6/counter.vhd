@@ -6,7 +6,8 @@ use ieee.numeric_std.all;
 entity counter is
     generic(N_bits:integer:=5);
     port (clk, rst_n, stall: in std_logic;
-          cnt: out std_logic_vector(N_bits-1 downto 0));          
+          cnt: out std_logic_vector(N_bits-1 downto 0);
+          up: out std_logic);          
 end counter;
 
 architecture Behavioral of counter is
@@ -31,5 +32,6 @@ begin
     end process;
 
 cnt<=up_count;
+up<='1' when up_count=up_limit else '0';
 
 end Behavioral;
