@@ -26,7 +26,7 @@ end component;
 
 signal row_cnt, pixel_cnt: std_logic_vector(N_bits-1 downto 0):=(others=>'0');
 signal pxl_case, prev_case: std_logic_vector(1 downto 0);
-signal row_stall, pixel_stall, row_up, pixel_up: std_logic;
+signal row_stall, pixel_stall, row_up, pixel_up, wait_for_img: std_logic;
 
 begin
 
@@ -50,7 +50,7 @@ prev_case_buffer: dff2 port map (clk=>clk,
                                  
 pxl_case_in<=pxl_case;
 pxl_case_out<=prev_case;
-pixel_stall<=not vld_in;
+pixel_stall<=not vld_in or wait_for_img;
 row_stall<=not pixel_up;
 ready_img<=(row_up and pixel_up);
                                  
@@ -70,6 +70,19 @@ begin
                 pxl_case<="00";     --case i
             end if; 
         end if; 
+end process;
+
+process(clk, rst_n)
+begin
+    if rst_n='1' then 
+        if clk'event and clk='1' then
+            if new_img='1' and conv_integer(row_cnt)=0 and conv_integer(pixel_cnt)=0 then
+                wait_for_img<='0';
+            elsif new_img='0' and conv_integer(row_cnt)=0 and conv_integer(pixel_cnt)=0 then
+                wait_for_img<='1';
+            end if;
+        end if;
+    end if;
 end process;
                                                      
 end Behavioral;

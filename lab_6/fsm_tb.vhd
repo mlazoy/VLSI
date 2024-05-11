@@ -33,10 +33,19 @@ UUT: finite_state_machine
                                     );
 testing: process
 begin
-new_img_tb<='1';
+
 vld_in_tb<='1';
 rst_n_tb<='1';
 
+new_img_tb<='0';
+for i in 0 to 15 loop
+    clk_tb<='0';
+    wait for 10ns;
+    clk_tb<='1';
+    wait for 10ns;
+end loop;
+
+new_img_tb<='1';
 for i in 0 to 32 loop
     for j in 0 to 32 loop
         clk_tb<='0';
