@@ -35,6 +35,7 @@ end component;
 
 signal pxl_11, pxl_12, pxl_13, pxl_14, pxl_21, pxl_22, pxl_23, pxl_24: std_logic_vector(7 downto 0);
 signal tmp_sum_1, tmp_sum_2: std_logic_vector(9 downto 0);
+signal X_pixel_1, X_pixel_0 : std_logic_vector(7 downto 0);
 
 begin
 
@@ -63,6 +64,9 @@ begin
         G_avg <= (others => '0');
         
     elsif clk'event and clk='1' and en='1' then 
+    
+        X_pixel_1 <= X_pixel_0;
+        X_pixel_0 <= pixel_grid(4);
     
         case pixel_case_in is
         when "00" => --case i
@@ -118,24 +122,24 @@ begin
         when "00" =>
         -- /2 is 1 right shift
         R_avg<=tmp_sum_1(8 downto 1);
-        G_avg<=pixel_grid(4);
+        G_avg<=X_pixel_1;
         B_avg<=tmp_sum_2(8 downto 1);
       
         when "01" =>
         R_avg<=tmp_sum_1(8 downto 1);
-        G_avg<=pixel_grid(4);
+        G_avg<=X_pixel_1;
         B_avg<=tmp_sum_2(8 downto 1);
         
         when "10" =>
         -- /4 is 2 right shifts
-        R_avg<=pixel_grid(4);
+        R_avg<=X_pixel_1;
         G_avg<=tmp_sum_1(9 downto 2);
         B_avg<=tmp_sum_2(9 downto 2);
         
         when "11" =>
         R_avg<=tmp_sum_1(9 downto 2);
         G_avg<=tmp_sum_2(9 downto 2);
-        B_avg<=pixel_grid(4);
+        B_avg<=X_pixel_1;
         
         when others =>
         null;

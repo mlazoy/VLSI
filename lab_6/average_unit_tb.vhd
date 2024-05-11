@@ -23,14 +23,14 @@ architecture average_unit_sim of average_unit_tb is
 component average_unit is
     port (
         clk, rst_n, en: in std_logic;
-        pixel_case : in std_logic_vector(1 downto 0);
+        pixel_case_in, pixel_case_out: in std_logic_vector(1 downto 0);
         pixel_grid : in grid3x3;
         R_avg, G_avg, B_avg : out std_logic_vector(7 downto 0)
     );
 end component;
 
 signal clk_tb, rst_n_tb, en_tb : std_logic;
-signal pixel_case_tb : std_logic_vector(1 downto 0);
+signal pixel_case_in_tb, pixel_case_out_tb : std_logic_vector(1 downto 0);
 signal pixel_grid_tb : grid3x3;
 signal R_avg_tb, B_avg_tb, G_avg_tb : std_logic_vector(7 downto 0);
 
@@ -39,7 +39,8 @@ begin
         clk => clk_tb,
         rst_n => rst_n_tb,
         en => en_tb,
-        pixel_case => pixel_case_tb,
+        pixel_case_in => pixel_case_in_tb,
+        pixel_case_out => pixel_case_out_tb,
         pixel_grid => pixel_grid_tb,
         R_avg => R_avg_tb,
         G_avg => G_avg_tb,
@@ -67,13 +68,33 @@ begin
     "11001011", "11010011", "10011000"
     );
     
-    for i in 0 to 3 loop
-        pixel_case_tb <= std_logic_vector(to_unsigned(i, 2));
-        clk_tb <= '0';
-        wait for 50 ns;
-        clk_tb <= '1';
-        wait for 50 ns;
-    end loop;
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "00";
+    pixel_case_out_tb <= "10";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "01";
+    pixel_case_out_tb <= "11";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "10";
+    pixel_case_out_tb <= "00";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "11";
+    pixel_case_out_tb <= "01";
+    clk_tb <= '1';
+    wait for 50 ns;
 
     --2nd example
     -- 28  75  14
@@ -85,16 +106,52 @@ begin
     "01111111", "00010101", "01111101"
     );
 
-    for i in 0 to 3 loop
-        pixel_case_tb <= std_logic_vector(to_unsigned(i, 2));
-        clk_tb <= '0';
-        wait for 50 ns;
-        clk_tb <= '1';
-        wait for 50 ns;
-    end loop;
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "00";
+    pixel_case_out_tb <= "10";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "01";
+    pixel_case_out_tb <= "11";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "10";
+    pixel_case_out_tb <= "00";
+    clk_tb <= '1';
+    wait for 50 ns;
+
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "11";
+    pixel_case_out_tb <= "01";
+    clk_tb <= '1';
+    wait for 50 ns;
     
     clk_tb <= '0';
     wait for 50 ns;
+    pixel_case_in_tb <= "00";
+    pixel_case_out_tb <= "10";
+    clk_tb <= '1';
+    wait for 50 ns;
+    
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "01";
+    pixel_case_out_tb <= "11";
+    clk_tb <= '1';
+    wait for 50 ns;
+    
+    clk_tb <= '0';
+    wait for 50 ns;
+    pixel_case_in_tb <= "10";
+    pixel_case_out_tb <= "00";
     clk_tb <= '1';
     wait for 50 ns;
 
