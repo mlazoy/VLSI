@@ -6,9 +6,9 @@ use work.custom_types_pkg.all;
 
 entity s2p_converter is
     generic(N_bits:integer:=5);
-    port (clk, rst_n: in std_logic;
+    port (clk, rst_n, valid_in, new_img: in std_logic;
           pixel_in: std_logic_vector(7 downto 0);
-          grid_map: out grid3x3);
+          grid_out: out grid3x3);
 end s2p_converter;
 
 architecture Behavioral of s2p_converter is
@@ -31,10 +31,18 @@ end component;
 
 signal wr_ram_1, wr_ram_2, wr_ram_3: std_logic := '0';
 signal rd_ram_1, rd_ram_2, rd_ram_3: std_logic := '1';
+
 signal full_ram_1, full_ram_2, full_ram_3, empty_ram_1, empty_ram_2, empty_ram_3: std_logic;
 signal ack_ram_1, ack_ram_2, ack_ram_3, vld_1, vld_2, vld_3 : std_logic;
+
 signal data_cnt_1, data_cnt_2, data_cnt_3: std_logic_vector(9 downto 0);
+
 signal dout_fifo_1, dout_fifo_2, dout_fifo_3: std_logic_vector(7 downto 0);
+
+signal grid_map: grid3x3;
+
+signal N_minus3: std_logic_vector(N_bits-2 downto 0):=(others=>'1');
+
 
 begin
 
@@ -76,4 +84,38 @@ RAM_FIFO_3: fifo_generator_0 port map(clk=>clk,
                                       valid=>vld_3,
                                       data_count=>data_cnt_3
                                       );
+                                      
+process(clk, rst_n)
+begin
+    if rst_n = '1' then 
+        rd_ram_1<='0';
+        rd_ram_2<='0';
+        rd_ram_3<='0';
+    elsif clk'event and clk='1' then
+        -- N-3 is 11100 for 32, 111100 for 64, ...
+        if valid_in='1' and (data_cnt_1(N_bits downto 2)=N_minus3 and data_cnt_1(1 downto 0)="00")  then 
+            rd_ram_1<='1';
+            rd_ram_2<='1';
+            rd_ram_3<='1';   
+        elsif new_img='1' then
+            rd_ram_1<='0';
+            rd_ram_2<='0';
+            rd_ram_3<='0';
+        end if;
+        
+        grid_map(0)<=dout_fifo_1;
+        grid_map(1)<=grid_map(0);
+        grid_map(2)<=grid_map(1);
+        grid_map(3)<=dout_fifo_2;
+        grid_map(4)<=grid_map(3);
+        grid_map(5)<=grid_map(4);
+        grid_map(6)<=dout_fifo_3;
+        grid_map(7)<=grid_map(6);
+        grid_map(8)<=grid_map(7);
+        
+    end if;
+end process;  
+
+grid_out<=grid_map;
+                                    
 end Behavioral;
