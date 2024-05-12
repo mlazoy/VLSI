@@ -70,17 +70,6 @@ begin
     
         case pixel_case_in is
         when "00" => --case i
-        pxl_11<=pixel_grid(1);
-        pxl_12<=pixel_grid(7);
-        pxl_13<=(others=>'0');
-        pxl_14<=(others=>'0');
-        --
-        pxl_21<=pixel_grid(3);
-        pxl_22<=pixel_grid(5);
-        pxl_23<=(others=>'0');
-        pxl_24<=(others=>'0');         
-        
-        when "01" => --case ii
         pxl_11<=pixel_grid(3);
         pxl_12<=pixel_grid(5);
         pxl_13<=(others=>'0');
@@ -88,6 +77,17 @@ begin
         --
         pxl_21<=pixel_grid(1);
         pxl_22<=pixel_grid(7);
+        pxl_23<=(others=>'0');
+        pxl_24<=(others=>'0');       
+        
+        when "01" => --case ii        
+        pxl_11<=pixel_grid(1);
+        pxl_12<=pixel_grid(7);
+        pxl_13<=(others=>'0');
+        pxl_14<=(others=>'0');
+        --
+        pxl_21<=pixel_grid(3);
+        pxl_22<=pixel_grid(5);
         pxl_23<=(others=>'0');
         pxl_24<=(others=>'0');
 
