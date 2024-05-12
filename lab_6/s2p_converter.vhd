@@ -8,7 +8,8 @@ entity s2p_converter is
     generic(N_bits:integer:=5);
     port (clk, rst_n, valid_in, new_img: in std_logic;
           pixel_in: std_logic_vector(7 downto 0);
-          grid_out: out grid3x3);
+          grid_out: out grid3x3;
+          valid_grid: out std_logic);
 end s2p_converter;
 
 architecture Behavioral of s2p_converter is
@@ -42,6 +43,7 @@ signal dout_fifo_1, dout_fifo_2, dout_fifo_3: std_logic_vector(7 downto 0);
 signal grid_map: grid3x3;
 
 signal N_minus3: std_logic_vector(N_bits-2 downto 0):=(others=>'1');
+signal all_bits: std_logic_vector(N_bits downto 0):=(others=>'1');
 
 
 begin
@@ -92,8 +94,8 @@ begin
         rd_ram_2<='0';
         rd_ram_3<='0';
     elsif clk'event and clk='1' then
-        -- N-3 is 11100 for 32, 111100 for 64, ...
-        if valid_in='1' and (data_cnt_1(N_bits downto 2)=N_minus3 and data_cnt_1(1 downto 0)="00")  then 
+        -- N-3 is 11101 for 32, 111101 for 64, ...
+        if valid_in='1' and (data_cnt_1(N_bits downto 2)=N_minus3 and data_cnt_1(1 downto 0)="01")  then 
             rd_ram_1<='1';
             rd_ram_2<='1';
             rd_ram_3<='1';   
@@ -101,6 +103,14 @@ begin
             rd_ram_1<='0';
             rd_ram_2<='0';
             rd_ram_3<='0';
+        end if;
+        
+        --equivalent to 2N+3 (-1 is all bits 1)
+        if data_cnt_1=all_bits and data_cnt_2=all_bits and 
+        (data_cnt_3(N_bits downto 2)=not N_minus3 and data_cnt_3(1 downto 0)="11") then
+            valid_grid<='1';
+        else
+            valid_grid<='0';
         end if;
         
         grid_map(0)<=dout_fifo_1;
