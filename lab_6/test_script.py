@@ -11,7 +11,7 @@ def get_random_pixels(size_N):
         for i in range (0, size_N):
             for j in range (0,size_N):
                 sample_image[i][j] = random.randint(0,pixel_range) 
-                file.write(format(sample_image[i][j],'08b')+" ")
+                file.write(format(sample_image[i][j],'08b')+"\n")
 
 def calc_avg(i,j):
    row = i
