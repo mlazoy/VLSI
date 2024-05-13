@@ -30,11 +30,11 @@ component fifo_generator_0 is
 );
 end component;
 
-signal wr_ram_1, wr_ram_2, wr_ram_3: std_logic := '0';
-signal rd_ram_1, rd_ram_2, rd_ram_3: std_logic := '1';
+signal wr_ram_1, wr_ram_2, wr_ram_3: std_logic := '1';
+signal rd_ram_1, rd_ram_2, rd_ram_3: std_logic;
 
 signal full_ram_1, full_ram_2, full_ram_3, empty_ram_1, empty_ram_2, empty_ram_3: std_logic;
-signal ack_ram_1, ack_ram_2, ack_ram_3: std_logic;
+--signal ack_ram_1, ack_ram_2, ack_ram_3: std_logic;
 signal vld_1, vld_2, vld_3 : std_logic;
 
 signal data_cnt_1, data_cnt_2, data_cnt_3: std_logic_vector(9 downto 0);
@@ -43,12 +43,9 @@ signal dout_fifo_1, dout_fifo_2, dout_fifo_3: std_logic_vector(7 downto 0);
 
 signal grid_map: grid3x3;
 
-signal N_minus3: std_logic_vector(N_bits downto 0);
+signal all_bits: std_logic_vector(N_bits downto 0):= (others=>'1');
 
 begin
--- N-3 is 11101 for 32, 111101 for 64, ...
-N_minus3(N_bits downto 2)<=(others=>'1');
-N_minus3(1 downto 0)<="10";
 
 RAM_FIFO_1: fifo_generator_0 port map(clk=>clk,
                                       srst=>rst_n,
@@ -96,11 +93,11 @@ begin
         rd_ram_2<='0';
         rd_ram_3<='0';
     elsif clk'event and clk='1' then
-        if data_cnt_1=N_minus3 then         
+        if data_cnt_1(N_bits downto 0)=all_bits then         
             rd_ram_1<='1';
             rd_ram_2<='1';
             rd_ram_3<='1';   
-        elsif conv_integer(data_cnt_1)=0 then
+        elsif empty_ram_1='1' then
             rd_ram_1<='0';
             rd_ram_2<='0';
             rd_ram_3<='0';
@@ -108,7 +105,7 @@ begin
         end if;
         
         --equivalent to 2N+3 (-1 is all bits 1)
-        if (full_ram_1='1' and full_ram_2='1' and data_cnt_3(1 downto 0)="11") then
+        if (data_cnt_1(N_bits downto 0)=all_bits and data_cnt_2(N_bits downto 0)=all_bits and data_cnt_3(1 downto 0)="11") then
             valid_grid<='1';
         end if;
         
@@ -128,4 +125,3 @@ end process;
 grid_out<=grid_map;
                                     
 end Behavioral;
-
