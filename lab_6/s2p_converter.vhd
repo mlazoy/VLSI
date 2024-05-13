@@ -155,5 +155,11 @@ process(row_number, pixel_number, grid_map)
     end if;
 end process;
 
+process(clk)
+begin  
+    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then valid_grid <= '0';
+    end if;
+end process;
+
                                     
 end Behavioral;
