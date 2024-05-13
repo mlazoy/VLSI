@@ -7,6 +7,7 @@ use work.PXL_GRID.all;
 entity s2p_converter is
     generic(N_bits:integer:=5);
     port (clk, rst_n: in std_logic;
+          row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
           pixel_in: std_logic_vector(7 downto 0);
           grid_out: out grid3x3;
           valid_grid: out std_logic);
@@ -44,6 +45,8 @@ signal dout_fifo_1, dout_fifo_2, dout_fifo_3: std_logic_vector(7 downto 0);
 signal grid_map: grid3x3;
 
 signal all_bits: std_logic_vector(N_bits downto 0):= (others=>'1');
+signal N : integer := 2**N_bits;
+
 
 begin
 
@@ -122,6 +125,35 @@ begin
     end if;
 end process;  
 
-grid_out<=grid_map;
+process(row_number, pixel_number, grid_map)
+    begin
+
+    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = 0) then grid_out(0) <= (others => '0');
+    else grid_out(0) <= grid_map(0);
+    end if;
+    if (conv_integer(row_number) = 0) then grid_out(1) <= (others => '0');
+    else grid_out(1) <= grid_map(1);
+    end if;
+    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = N-1) then grid_out(2) <= (others => '0');
+    else grid_out(2) <= grid_map(2);
+    end if;
+    if (conv_integer(pixel_number) = 0) then grid_out(3) <= (others => '0');
+    else grid_out(3) <= grid_map(3);
+    end if;
+    grid_out(4) <= grid_map(4);
+    if (conv_integer(pixel_number) = N-1) then grid_out(5) <= (others => '0');
+    else grid_out(5) <= grid_map(5);
+    end if;
+    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = 0) then grid_out(6) <= (others => '0');
+    else grid_out(6) <= grid_map(6);
+    end if;
+    if (conv_integer(row_number) = N-1) then grid_out(7) <= (others => '0');
+    else grid_out(7) <= grid_map(7);
+    end if;
+    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then grid_out(8) <= (others => '0');
+    else grid_out(8) <= grid_map(8);
+    end if;
+end process;
+
                                     
 end Behavioral;
