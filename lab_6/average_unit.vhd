@@ -107,7 +107,17 @@ begin
 --            pxl_23<=(others=>'0');
 --            pxl_24<=(others=>'0');  
             null;   
-        end case;  
+        end case; 
+        else
+          pxl_11<=(others=>'0');
+          pxl_12<=(others=>'0');
+          pxl_13<=(others=>'0');
+          pxl_14<=(others=>'0');
+          --
+          pxl_21<=(others=>'0');
+          pxl_22<=(others=>'0');
+          pxl_23<=(others=>'0');
+          pxl_24<=(others=>'0');   
       end if;
 end process;    
 
