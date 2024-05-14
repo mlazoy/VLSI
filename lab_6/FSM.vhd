@@ -70,7 +70,7 @@ begin
     --if now i am on the first pixel and before i was waiting the do vld_out = '1'
     if conv_integer(pixel_cnt) = 1 and conv_integer(pixel_cnt_prev) = 0 and conv_integer(row_cnt) = 0 and conv_integer(row_cnt_prev) = 0 then
         vld_out <= '1';
-    elsif conv_integer(pixel_cnt) = 0 and conv_integer(pixel_cnt_prev) = all_bits and conv_integer(row_cnt) = 0 and conv_integer(row_cnt_prev) = all_bits then
+    elsif conv_integer(pixel_cnt) = 0 and conv_integer(row_cnt) = 0 then
         vld_out <= '0';
     end if;
 end process;
