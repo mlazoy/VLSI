@@ -8,7 +8,7 @@ entity s2p_converter is
     generic(N_bits:integer:=5);
     port (clk, rst: in std_logic; --here rst positive logic because of s2p srst
           row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
-          pixel_in: std_logic_vector(7 downto 0);
+          pixel_in: in std_logic_vector(7 downto 0);
           grid_out: out grid3x3;
           valid_grid: out std_logic);
 end s2p_converter;
