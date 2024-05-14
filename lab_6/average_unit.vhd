@@ -22,7 +22,7 @@ architecture Behavioral of average_unit is
 
 component pixel_adder_new is
     port(
---        en: std_logic;
+        en: std_logic;
         pixel_1, pixel_2, pixel_3, pixel_4: in std_logic_vector(7 downto 0);
         sum: out std_logic_vector(9 downto 0)); -- 2 more bit to avoid overflow here 
 end component;
@@ -37,16 +37,16 @@ PXL_ADD1: pixel_adder_new port map (
     pixel_2=>pxl_12,
     pixel_3=>pxl_13,
     pixel_4=>pxl_14,
-    sum=>tmp_sum_1);
---    en=>valid_grid
+    sum=>tmp_sum_1,
+    en=>rst_n);
                                 
 PXL_ADD2: pixel_adder_new port map (
     pixel_1=>pxl_21,
     pixel_2=>pxl_22,
     pixel_3=>pxl_23,
     pixel_4=>pxl_24,
-    sum=>tmp_sum_2);
---    en=>valid_grid
+    sum=>tmp_sum_2,
+    en=>rst_n);
                                
 process(pixel_case,pixel_grid)
 begin
@@ -96,7 +96,16 @@ begin
             pxl_23<=pixel_grid(5);
             pxl_24<=pixel_grid(7);
             
-            when others =>
+            when others => -- use case i as deafult just for testing when fsm is missing in top level 
+--            pxl_11<=pixel_grid(3);
+--            pxl_12<=pixel_grid(5);
+--            pxl_13<=(others=>'0');
+--            pxl_14<=(others=>'0');
+--            --
+--            pxl_21<=pixel_grid(1);
+--            pxl_22<=pixel_grid(7);
+--            pxl_23<=(others=>'0');
+--            pxl_24<=(others=>'0');  
             null;   
         end case;  
       end if;
@@ -133,7 +142,10 @@ begin
         G_avg<=tmp_sum_2(9 downto 2);
         B_avg<=pixel_grid(4);
         
-        when others =>
+        when others => -- use case i as deafult just for testing when fsm is missing in top level 
+--        R_avg<=tmp_sum_1(8 downto 1);
+--        G_avg<=pixel_grid(4);
+--        B_avg<=tmp_sum_2(8 downto 1);
         null;
         end case;      
     end if;

@@ -6,11 +6,11 @@ use work.PXL_GRID.all;
 
 entity s2p_converter is
     generic(N_bits:integer:=5);
-    port (clk, rst_n: in std_logic;
-          row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
+    port (clk, rst: in std_logic; --here rst positive logic because of s2p srst
+         -- row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
           pixel_in: std_logic_vector(7 downto 0);
-          grid_out: out grid3x3;
-          valid_grid: out std_logic);
+          grid_out: out grid3x3);
+--          valid_grid: out std_logic);
 end s2p_converter;
 
 architecture Behavioral of s2p_converter is
@@ -44,14 +44,14 @@ signal dout_fifo_1, dout_fifo_2, dout_fifo_3: std_logic_vector(7 downto 0);
 
 signal grid_map: grid3x3;
 
-signal all_bits: std_logic_vector(N_bits downto 0):= (others=>'1');
+signal all_bits: std_logic_vector(N_bits-1 downto 0):= (others=>'1');
 signal N : integer := 2**N_bits;
 
 
 begin
 
 RAM_FIFO_1: fifo_generator_0 port map(clk=>clk,
-                                      srst=>rst_n,
+                                      srst=>rst,
                                       din=>pixel_in,
                                       wr_en=>wr_ram_1,
                                       rd_en=>rd_ram_1,
@@ -64,7 +64,7 @@ RAM_FIFO_1: fifo_generator_0 port map(clk=>clk,
                                       );
                                       
 RAM_FIFO_2: fifo_generator_0 port map(clk=>clk,
-                                        srst=>rst_n,
+                                        srst=>rst,
                                         din=>dout_fifo_1,
                                         wr_en=>wr_ram_2,
                                         rd_en=>rd_ram_2,
@@ -77,7 +77,7 @@ RAM_FIFO_2: fifo_generator_0 port map(clk=>clk,
                                         );                                      
 
 RAM_FIFO_3: fifo_generator_0 port map(clk=>clk,
-                                      srst=>rst_n,
+                                      srst=>rst,
                                       din=>dout_fifo_2,
                                       wr_en=>wr_ram_3,
                                       rd_en=>rd_ram_3,
@@ -89,14 +89,15 @@ RAM_FIFO_3: fifo_generator_0 port map(clk=>clk,
                                       data_count=>data_cnt_3
                                       );
                                       
-process(clk, rst_n)
+process(clk, rst)
 begin
-    if rst_n = '1' then 
+    if rst = '1' then 
         rd_ram_1<='0';
         rd_ram_2<='0';
         rd_ram_3<='0';
+        grid_map<=(others=>(others=>'0'));
     elsif clk'event and clk='1' then
-        if data_cnt_1(N_bits downto 0)=all_bits then         
+        if conv_integer(data_cnt_1)=N-3 then         
             rd_ram_1<='1';
             rd_ram_2<='1';
             rd_ram_3<='1';   
@@ -104,62 +105,59 @@ begin
             rd_ram_1<='0';
             rd_ram_2<='0';
             rd_ram_3<='0';
-            valid_grid<='0';
+--          valid_grid<='0';
         end if;
         
         --equivalent to 2N+3 (-1 is all bits 1)
-        if (data_cnt_1(N_bits downto 0)=all_bits and data_cnt_2(N_bits downto 0)=all_bits and data_cnt_3(1 downto 0)="11") then
-            valid_grid<='1';
-        end if;
+--        if (data_cnt_1(N_bits-1 downto 0)=all_bits and data_cnt_2(N_bits-1 downto 0)=all_bits and data_cnt_3(1 downto 0)="11") then
+--            valid_grid<='1';
+--        elsif if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then 
+--            valid_grid <= '0';
+--        end if;
         
-        grid_map(0)<=dout_fifo_1;
-        grid_map(1)<=grid_map(0);
-        grid_map(2)<=grid_map(1);
-        grid_map(3)<=dout_fifo_2;
-        grid_map(4)<=grid_map(3);
-        grid_map(5)<=grid_map(4);
-        grid_map(6)<=dout_fifo_3;
-        grid_map(7)<=grid_map(6);
-        grid_map(8)<=grid_map(7);
+        grid_map(8)<=dout_fifo_1;
+        grid_map(7)<=grid_map(8);
+        grid_map(6)<=grid_map(7);
+        grid_map(5)<=dout_fifo_2;
+        grid_map(4)<=grid_map(5);
+        grid_map(3)<=grid_map(4);
+        grid_map(2)<=dout_fifo_3;
+        grid_map(1)<=grid_map(2);
+        grid_map(0)<=grid_map(1);
         
     end if;
 end process;  
 
-process(row_number, pixel_number, grid_map)
-    begin
+grid_out<=grid_map;
 
-    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = 0) then grid_out(0) <= (others => '0');
-    else grid_out(0) <= grid_map(0);
-    end if;
-    if (conv_integer(row_number) = 0) then grid_out(1) <= (others => '0');
-    else grid_out(1) <= grid_map(1);
-    end if;
-    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = N-1) then grid_out(2) <= (others => '0');
-    else grid_out(2) <= grid_map(2);
-    end if;
-    if (conv_integer(pixel_number) = 0) then grid_out(3) <= (others => '0');
-    else grid_out(3) <= grid_map(3);
-    end if;
-    grid_out(4) <= grid_map(4);
-    if (conv_integer(pixel_number) = N-1) then grid_out(5) <= (others => '0');
-    else grid_out(5) <= grid_map(5);
-    end if;
-    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = 0) then grid_out(6) <= (others => '0');
-    else grid_out(6) <= grid_map(6);
-    end if;
-    if (conv_integer(row_number) = N-1) then grid_out(7) <= (others => '0');
-    else grid_out(7) <= grid_map(7);
-    end if;
-    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then grid_out(8) <= (others => '0');
-    else grid_out(8) <= grid_map(8);
-    end if;
-end process;
+--process(row_number, pixel_number, grid_map)
+--    begin
 
-process(clk)
-begin  
-    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then valid_grid <= '0';
-    end if;
-end process;
-
+--    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = 0) then grid_out(0) <= (others => '0');
+--    else grid_out(0) <= grid_map(0);
+--    end if;
+--    if (conv_integer(row_number) = 0) then grid_out(1) <= (others => '0');
+--    else grid_out(1) <= grid_map(1);
+--    end if;
+--    if (conv_integer(row_number) = 0 or conv_integer(pixel_number) = N-1) then grid_out(2) <= (others => '0');
+--    else grid_out(2) <= grid_map(2);
+--    end if;
+--    if (conv_integer(pixel_number) = 0) then grid_out(3) <= (others => '0');
+--    else grid_out(3) <= grid_map(3);
+--    end if;
+--    grid_out(4) <= grid_map(4);
+--    if (conv_integer(pixel_number) = N-1) then grid_out(5) <= (others => '0');
+--    else grid_out(5) <= grid_map(5);
+--    end if;
+--    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = 0) then grid_out(6) <= (others => '0');
+--    else grid_out(6) <= grid_map(6);
+--    end if;
+--    if (conv_integer(row_number) = N-1) then grid_out(7) <= (others => '0');
+--    else grid_out(7) <= grid_map(7);
+--    end if;
+--    if (conv_integer(row_number) = N-1 or conv_integer(pixel_number) = N-1) then grid_out(8) <= (others => '0');
+--    else grid_out(8) <= grid_map(8);
+--    end if;
+--end process;
                                     
 end Behavioral;
