@@ -2,18 +2,11 @@ library ieee;
 use ieee.std_logic_1164.all;
 use ieee.std_logic_unsigned.all;
 use ieee.numeric_std.all;
-
-package custom_types_pkg is
-    type grid3x3 is array (0 to 8) of std_logic_vector(7 downto 0);
-end package custom_types_pkg;
-
-library ieee;
-use ieee.std_logic_1164.all;
-use work.custom_types_pkg.all; 
+use work.PXL_GRID.all;
 
 entity average_unit is
     port (
-        clk, rst_n, en: in std_logic;
+        clk, rst_n, valid_grid: in std_logic;
         pixel_case: in std_logic_vector(1 downto 0); 
         pixel_grid : in grid3x3;
         R_avg, G_avg, B_avg: out std_logic_vector(7 downto 0));
@@ -29,6 +22,7 @@ architecture Behavioral of average_unit is
 
 component pixel_adder_new is
     port(
+--        en: std_logic;
         pixel_1, pixel_2, pixel_3, pixel_4: in std_logic_vector(7 downto 0);
         sum: out std_logic_vector(9 downto 0)); -- 2 more bit to avoid overflow here 
 end component;
@@ -43,76 +37,79 @@ PXL_ADD1: pixel_adder_new port map (
     pixel_2=>pxl_12,
     pixel_3=>pxl_13,
     pixel_4=>pxl_14,
-    sum=>tmp_sum_1
-);
+    sum=>tmp_sum_1);
+--    en=>valid_grid
                                 
 PXL_ADD2: pixel_adder_new port map (
     pixel_1=>pxl_21,
     pixel_2=>pxl_22,
     pixel_3=>pxl_23,
     pixel_4=>pxl_24,
-    sum=>tmp_sum_2
-);
+    sum=>tmp_sum_2);
+--    en=>valid_grid
                                
+process(pixel_case,pixel_grid)
+begin
+    if valid_grid='1' then
+        case pixel_case is
+            when "00" => --case i
+            pxl_11<=pixel_grid(3);
+            pxl_12<=pixel_grid(5);
+            pxl_13<=(others=>'0');
+            pxl_14<=(others=>'0');
+            --
+            pxl_21<=pixel_grid(1);
+            pxl_22<=pixel_grid(7);
+            pxl_23<=(others=>'0');
+            pxl_24<=(others=>'0');       
+            
+            when "01" => --case ii        
+            pxl_11<=pixel_grid(1);
+            pxl_12<=pixel_grid(7);
+            pxl_13<=(others=>'0');
+            pxl_14<=(others=>'0');
+            --
+            pxl_21<=pixel_grid(3);
+            pxl_22<=pixel_grid(5);
+            pxl_23<=(others=>'0');
+            pxl_24<=(others=>'0');
+    
+            when "10" => --case iii
+            pxl_11<=pixel_grid(1);
+            pxl_12<=pixel_grid(3);
+            pxl_13<=pixel_grid(5);
+            pxl_14<=pixel_grid(7);
+            --
+            pxl_21<=pixel_grid(0);
+            pxl_22<=pixel_grid(2);
+            pxl_23<=pixel_grid(6);
+            pxl_24<=pixel_grid(8);
+            
+            when "11" => --case iv
+            pxl_11<=pixel_grid(0);
+            pxl_12<=pixel_grid(2);
+            pxl_13<=pixel_grid(6);
+            pxl_14<=pixel_grid(8);
+            --
+            pxl_21<=pixel_grid(1);
+            pxl_22<=pixel_grid(3);
+            pxl_23<=pixel_grid(5);
+            pxl_24<=pixel_grid(7);
+            
+            when others =>
+            null;   
+        end case;  
+      end if;
+end process;    
+
 process(clk,rst_n)
 begin
-    case pixel_case is
-        when "00" => --case i
-        pxl_11<=pixel_grid(3);
-        pxl_12<=pixel_grid(5);
-        pxl_13<=(others=>'0');
-        pxl_14<=(others=>'0');
-        --
-        pxl_21<=pixel_grid(1);
-        pxl_22<=pixel_grid(7);
-        pxl_23<=(others=>'0');
-        pxl_24<=(others=>'0');       
-        
-        when "01" => --case ii        
-        pxl_11<=pixel_grid(1);
-        pxl_12<=pixel_grid(7);
-        pxl_13<=(others=>'0');
-        pxl_14<=(others=>'0');
-        --
-        pxl_21<=pixel_grid(3);
-        pxl_22<=pixel_grid(5);
-        pxl_23<=(others=>'0');
-        pxl_24<=(others=>'0');
-
-        when "10" => --case iii
-        pxl_11<=pixel_grid(1);
-        pxl_12<=pixel_grid(3);
-        pxl_13<=pixel_grid(5);
-        pxl_14<=pixel_grid(7);
-        --
-        pxl_21<=pixel_grid(0);
-        pxl_22<=pixel_grid(2);
-        pxl_23<=pixel_grid(6);
-        pxl_24<=pixel_grid(8);
-        
-        when "11" => --case iv
-        pxl_11<=pixel_grid(0);
-        pxl_12<=pixel_grid(2);
-        pxl_13<=pixel_grid(6);
-        pxl_14<=pixel_grid(8);
-        --
-        pxl_21<=pixel_grid(1);
-        pxl_22<=pixel_grid(3);
-        pxl_23<=pixel_grid(5);
-        pxl_24<=pixel_grid(7);
-        
-        when others =>
-        null;   
-    end case;  
-
     if rst_n='0' then 
         R_avg <= (others => '0');
         B_avg <= (others => '0');
         G_avg <= (others => '0');
         
-    elsif clk'event and clk='1' and en='1' then 
-      
-        -- output is according to previous state
+    elsif clk'event and clk='1' then    
         case pixel_case is
         when "00" =>
         -- /2 is 1 right shift
@@ -138,8 +135,7 @@ begin
         
         when others =>
         null;
-        end case;
-        
+        end case;      
     end if;
 end process;
 
