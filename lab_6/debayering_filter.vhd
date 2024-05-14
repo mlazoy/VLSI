@@ -23,17 +23,19 @@ component average_unit is
     R_avg, G_avg, B_avg: out std_logic_vector(7 downto 0));
 end component;
 
---component finite_state_machine is
---    port(clk, rst_n, new_img, vld_in: in std_logic;
---     pxl_case: out std_logic_vector(1 downto 0);
---     ready_img, vld_out, avg_stall: out std_logic);   
---end component;
+component finite_state_machine is
+    port(clk, rst_n, new_img, vld_in: in std_logic;
+     pxl_case: out std_logic_vector(1 downto 0);
+     ready_img, vld_out: out std_logic;
+     row_counter_out, pixel_counter_out : out std_logic_vector(N_bits-1 downto 0));   
+end component;
 
 component s2p_converter is 
 port (clk, rst: in std_logic; 
- -- row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
-  pixel_in: std_logic_vector(7 downto 0);
-  grid_out: out grid3x3);
+  row_number, pixel_number : in std_logic_vector(N_bits-1 downto 0);
+  pixel_in: in std_logic_vector(7 downto 0);
+  grid_out: out grid3x3;
+  valid_grid : out std_logic);
 end component;
 
 signal fsm_case: std_logic_vector(1 downto 0);
@@ -41,6 +43,7 @@ signal fsm_valid_grid: std_logic;
 
 signal s2p_grid: grid3x3;
 signal s2p_rst: std_logic;
+signal s2p_row_counter, s2p_pixel_counter : std_logic_vector(N_bits-1 downto 0);
 
 begin
 
@@ -52,23 +55,27 @@ AVG: average_unit port map (clk=>clk,
                             R_avg=>R,
                             G_avg=>G,
                             B_avg=>B);
-
                                                        
---FSM: finite_state_machine port map(clk=>clk,
---                                   rst_n=>rst_n,
---                                   new_img=>new_image,
---                                   vld_in=>valid_in,
---                                   pxl_case_in=>fsm_case_in,
---                                   vld_out=>valid_out,
---                                   ready_img=>image_finished
---                                   );
+FSM: finite_state_machine port map(clk=>clk,
+                                   rst_n=>rst_n,
+                                   new_img=>fsm_valid_grid,
+                                   vld_in=>fsm_valid_grid,
+                                   pxl_case=>fsm_case,
+                                   ready_img=>image_finished,
+                                   vld_out=>valid_out,
+                                   row_counter_out => s2p_row_counter,
+                                   pixel_counter_out => s2p_pixel_counter
+                                   );
 
 s2p_rst<=not rst_n;
 
 S2P: s2p_converter port map (clk=>clk,
                              rst=>s2p_rst,
+                             row_number=>s2p_row_counter,
+                             pixel_number=>s2p_pixel_counter,
                              pixel_in=>pixel,
-                             grid_out=>s2p_grid
+                             grid_out=>s2p_grid,
+                             valid_grid =>fsm_valid_grid
                              );
 
 end Structural;
