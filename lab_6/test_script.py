@@ -27,7 +27,7 @@ def calc_avg(i,j):
    grid22 = sample_image[i+1][j+1] if (i<size_N and j<size_N) else 0
 
    if (row%2==0 and pxl%2==0): #case ii
-       R = (grid01+grid20)/2
+       R = (grid01+grid21)/2
        G = grid11
        B = (grid10+grid12)/2
    elif (row%2==0 and pxl%2==1): #case iv
