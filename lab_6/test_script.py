@@ -54,9 +54,16 @@ def calc_grid_averages(size_N):
                     wfile.write("\n")
                     
                     
+def get_input_pixels(infile):
+    with open(infile) as input:
+        for i in range (0,size_N):
+            for j in range (0,size_N):
+                pxl = int(input.readline())
+                sample_image[i][j] = pxl
 
 if __name__=="__main__":
     print("Enter image size N: ")
     size_N=int(input())
-    get_random_pixels(size_N=size_N)
+    #get_random_pixels(size_N=size_N)
+    get_input_pixels("bayer16x16_2024.txt")
     calc_grid_averages(size_N=size_N)
