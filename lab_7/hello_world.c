@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdint.h>
 #include <sleep.h>
 #include "platform.h"
 #include "xil_printf.h"
@@ -30,12 +31,32 @@ int main()
 
 	print("HELLO 1\r\n");
 	// User application local variables
-	int N = 1024;
+	int N = 16;
 	u8 *input_buffer;
 	u32 *output_buffer;
+
 	//initiliazing pointer to the defined addresses
 	input_buffer = (u8 *)TX_BUFFER; //8bit data, one pixel to the fpga
 	output_buffer = (u32 *)RX_BUFFER; //32bit data, out 3 pixels from the fpga
+
+	const char *filename = "bayer16x16_2024.txt"; // Replace with your filename
+	FILE *file = fopen(filename, "r");
+	if (file == NULL) {
+		perror("Failed to open file");
+		return -1;
+	}
+
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			if (fscanf(file, "%hhu", &input_buffer[i*N+j]) != 1) {
+				fprintf(stderr, "Error reading number from file\n");
+				fclose(file);
+				return -1;
+			}
+		}
+	}
+
+	fclose(file);
 
 
 	init_platform();
@@ -115,18 +136,81 @@ int main()
 
     XTime_GetTime(&preExecCyclesSW);
     // Step 5: Perform SW processing
-    int *r_sw = (int *)malloc(N*N*sizeof(int));
-	int *g_sw = (int *)malloc(N*N*sizeof(int));
-	int *b_sw = (int *)malloc(N*N*sizeof(int));
+    uint8_t *output_R = (uint8_t *)malloc(N*N*sizeof(uint8_t));
+	uint8_t *output_G = (uint8_t *)malloc(N*N*sizeof(uint8_t));
+	uint8_t *output_B = (uint8_t *)malloc(N*N*sizeof(uint8_t));
+	uint8_t grid00, grid01, grid02, grid10, grid11, grid12, grid20, grid21, grid22;
+	for(int i = 0; i < N; ++i) {
+		for(int j = 0; j < N; ++j) {
+			//make the proper grid, so that out of bounds pixels are assumed to be equal to 0
+			if (i > 0 && j > 0) grid00 = input_buffer[(i-1)*N+(j-1)]; else grid00 = 0;
+			if (i > 0) grid01 = input_buffer[(i-1)*N+j]; else grid01 = 0;
+			if (i > 0 && j <(N-1)) grid02 = input_buffer[(i-1)*N+(j+1)]; else grid02 = 0;
+			if (j > 0) grid10 = input_buffer[i*N+(j-1)]; else grid10 = 0;
+			grid11 = input_buffer[i*N+j];
+			if (j < (N-1)) grid12 = input_buffer[i*N+(j+1)]; else grid12 = 0;
+			if (i < (N-1) && j > 0) grid20 = input_buffer[(i+1)*N+(j-1)]; else grid20 = 0;
+			if (i < (N-1)) grid21 = input_buffer[(i+1)*N+j]; else grid21 = 0;
+			if (i < (N-1) && j < (N-1)) grid22 = input_buffer[(i+1)*N+(j+1)]; else grid22 = 0;
 
+			//check in which case of the debayering filter i am in
+			if (i%2 == 0 && j%2 == 0) { //case ii
+				output_R[i*N+j] = (grid01 + grid21) / 2;
+				output_G[i*N+j] = grid11;
+				output_B[i*N+j] = (grid10 + grid12) / 2;
+			}
+			else if (i%2 == 0 && j%2 == 1) { //case iv
+				output_R[i*N+j] = (grid00 + grid02 + grid20 + grid22) / 4;
+				output_G[i*N+j] = (grid01 + grid10 + grid12 + grid21) / 4;
+				output_B[i*N+j] = grid11;
+			}
+			else if (i%2 == 1 && j%2 == 0) { //case iii
+				output_R[i*N+j] = grid11;
+				output_G[i*N+j] = (grid01 + grid10 + grid12 + grid21) / 4;
+				output_B[i*N+j] = (grid00 + grid02 + grid20 + grid22) / 4;
+			}
+			else if (i%2 == 1 && j%2 == 1) { // case i
+				output_R[i*N+j] = (grid10 + grid12) / 2;
+				output_G[i*N+j] = grid11;
+				output_B[i*N+j] = (grid01 + grid21) / 2;
+			}
+			else {
+				output_R[i*N+j] = 0;
+				output_G[i*N+j] = 0;
+				output_B[i*N+j] = 0;
+			}
+		}
+	}
 
     XTime_GetTime(&postExecCyclesSW);
 
+    xil_printf("Software completed calculating the results as well\n");
+
     // Step 6: Compare FPGA and SW results
     //     6a: Report total percentage error
+    uint8_t hardware_R, hardware_G, hardware_B;
+    int errors = 0;
+    for(int i = 0; i < N*N; ++i) {
+    	hardware_R = (output_buffer[i] & 0x00FF0000) >> 16;
+    	hardware_G = (output_buffer[i] & 0x0000FF00) >> 8;
+    	hardware_B = (uint8_t) (output_buffer[i] & 0x000000FF);
+    	if (output_R[i] == hardware_R && output_G[i] == hardware_G && output_B[i] == hardware_B) continue;
+    	else ++errors;
+    }
+    double error_per = (errors * 1.0 / (N*N))*100;
+    xil_printf("Total Percentage Error: %f\n", error_per);
+
     //     6b: Report FPGA execution time in cycles (use preExecCyclesFPGA and postExecCyclesFPGA)
+    int fpga_cycles = postExecCyclesFPGA - preExecCyclesFPGA;
+    xil_printf("FPGA cycles: %d\n", fpga_cycles);
+
     //     6c: Report SW execution time in cycles (use preExecCyclesSW and postExecCyclesSW)
+    int software_cycles = postExecCyclesSW - preExecCyclesSW;
+    xil_printf("Software cycles: %d\n", software_cycles);
+
     //     6d: Report speedup (SW_execution_time / FPGA_exection_time)
+    double speedup = (software_cycles*1.0) / fpga_cycles;
+    xil_printf("Speedup: %d\n", speedup);
 
     cleanup_platform();
     return 0;
