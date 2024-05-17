@@ -107,7 +107,7 @@ begin
 --          valid_grid<='0';
         end if;
         
-        if en = '1' then
+        if rd_ram_1 = '1' then
             grid_map(8)<=dout_fifo_1;
             grid_map(7)<=grid_map(8);
             grid_map(6)<=grid_map(7);
