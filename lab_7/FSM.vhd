@@ -51,7 +51,7 @@ input_pixel_counter : counter port map (
 
 input_pixel_stall <= not vld_in  or wait_for_input;
 input_row_stall <= not input_pixel_up;
-vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" else '0';
+vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" or (conv_integer(input_pixel_cnt) = 1 and conv_integer(input_row_cnt) = 2) else '0';
 vld_out<='1' when (prev_stage="01" and vld_in='1') or prev_stage="10" else '0';
 ready_img <= '1' when prev_stage="10" and stage="00" else '0';
 
