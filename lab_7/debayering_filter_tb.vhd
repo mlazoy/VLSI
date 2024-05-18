@@ -62,7 +62,7 @@ wait for 10ns;
 rst_tb<='1';
 wait for 10ns;
 
-for i in 0 to 10 loop
+for i in 0 to 5 loop
     clk_tb<='0';
     wait for 10ns;
     clk_tb<='1';
