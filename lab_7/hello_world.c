@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <stdint.h>
 #include <sleep.h>
 #include "platform.h"
@@ -18,6 +19,9 @@
 #define RX_BUFFER (XPAR_DDR_MEM_BASEADDR + 0x10000000) // 0 + 256MByte
 
 /* User application global variables & defines */
+uint8_t test_data[] = {
+  #include "bayer16x16_sdk.txt"
+};
 
 int main()
 {
@@ -39,25 +43,9 @@ int main()
 	input_buffer = (u8 *)TX_BUFFER; //8bit data, one pixel to the fpga
 	output_buffer = (u32 *)RX_BUFFER; //32bit data, out 3 pixels from the fpga
 
-	const char *filename = "bayer16x16_2024.txt"; // Replace with your filename
-	FILE *file = fopen(filename, "r");
-	if (file == NULL) {
-		perror("Failed to open file");
-		return -1;
+	for(int i = 0; i < N*N; ++i) {
+		input_buffer[i] = test_data[i];
 	}
-
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			if (fscanf(file, "%hhu", &input_buffer[i*N+j]) != 1) {
-				fprintf(stderr, "Error reading number from file\n");
-				fclose(file);
-				return -1;
-			}
-		}
-	}
-
-	fclose(file);
-
 
 	init_platform();
 
@@ -120,12 +108,14 @@ int main()
 	xil_printf("Successfully tried to sent the pixels to dma\n");
 
     //      3c: Wait for TX-DMA & RX-DMA to finish
-
+	sleep(3);
 	//if they are busy they are not done sending and receiving
+	/*
 	while (XAxiDma_Busy(&ps2pl_dma, XAXIDMA_DMA_TO_DEVICE)) {}
 	xil_printf("Transfered all pixels\n");
 	while (XAxiDma_Busy(&pl2ps_dma, XAXIDMA_DEVICE_TO_DMA)) {}
 	xil_printf("Received all pixels\n");
+	*/
 
 	int sent = Xil_In32(TX_DMA_MM2S_LENGTH_ADDR), received = Xil_In32(RX_DMA_S2MM_LENGTH_ADDR);
 	xil_printf("Sent %d bytes to pl, received %d bytes from pl which means %d pixels received\n", sent, received, received / 4);
