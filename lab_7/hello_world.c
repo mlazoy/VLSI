@@ -189,11 +189,14 @@ int main()
     	hardware_R = (output_buffer[i] & 0x00FF0000) >> 16;
     	hardware_G = (output_buffer[i] & 0x0000FF00) >> 8;
     	hardware_B = (uint8_t) (output_buffer[i] & 0x000000FF);
+    	xil_printf("Hardware: (%d,%d,%d), Software: (%d,%d,%d)\n", hardware_R, hardware_G, hardware_B, output_R[i], output_G[i], output_B[i]);
     	if (output_R[i] == hardware_R && output_G[i] == hardware_G && output_B[i] == hardware_B) continue;
-    	else ++errors;
+    	else {
+    		++errors;
+    	}
     }
-    double error_per = (errors * 1.0 / (N*N))*100;
-    xil_printf("Total Percentage Error: %f\n", error_per);
+    int error_per = (errors / (N*N))*100;
+    xil_printf("Total Percentage Error: %d%%\n", error_per);
 
     //     6b: Report FPGA execution time in cycles (use preExecCyclesFPGA and postExecCyclesFPGA)
     int fpga_cycles = postExecCyclesFPGA - preExecCyclesFPGA;
@@ -204,7 +207,7 @@ int main()
     xil_printf("Software cycles: %d\n", software_cycles);
 
     //     6d: Report speedup (SW_execution_time / FPGA_exection_time)
-    double speedup = (software_cycles*1.0) / fpga_cycles;
+    int speedup = software_cycles / fpga_cycles;
     xil_printf("Speedup: %d\n", speedup);
 
     cleanup_platform();
