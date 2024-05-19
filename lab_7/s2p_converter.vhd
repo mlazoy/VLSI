@@ -29,6 +29,14 @@ component fifo_generator_0 is
 );
 end component;
 
+component dff8 is
+    port (
+        D : in std_logic_vector(7 downto 0);
+        clk, rst: in std_logic;
+        Q: out std_logic_vector(7 downto 0)
+    );
+end component;
+
 signal wr_ram_1, wr_ram_2, wr_ram_3: std_logic;
 signal rd_ram_1, rd_ram_2, rd_ram_3: std_logic;
 
@@ -45,8 +53,15 @@ signal grid_map: grid3x3;
 signal all_bits: std_logic_vector(N_bits-1 downto 0):= (others=>'1');
 signal N : integer := 2**N_bits;
 
+--signal buffered_pixel: std_logic_vector(7 downto 0);
 
 begin
+
+--INPUT_BUFF: dff8 port map (clk=>clk,
+--                           rst=>rst,
+--                           D=>pixel_in,
+--                           Q=>buffered_pixel
+--                           );
 
 RAM_FIFO_1: fifo_generator_0 port map(clk=>clk,
                                       srst=>rst,
@@ -86,15 +101,18 @@ RAM_FIFO_3: fifo_generator_0 port map(clk=>clk,
                                       valid=>vld_3,
                                       data_count=>data_cnt_3
                                       );
-
-wr_ram_1<=en;
-wr_ram_2<=en;
-wr_ram_3<=en;                             
+                            
 process(clk, rst)
 begin
     if rst = '1' then 
+--        wr_ram_1<='1';
+--        wr_ram_2<='1';
+--        wr_ram_3<='1'; 
         grid_map<=(others=>(others=>'0'));
     elsif clk'event and clk='1' then
+        wr_ram_1<=en;
+        wr_ram_2<=en;
+        wr_ram_3<=en; 
         if conv_integer(data_cnt_1)>=N-2 and en='1' then         
             rd_ram_1<='1';
             rd_ram_2<='1';
@@ -107,7 +125,7 @@ begin
 --          valid_grid<='0';
         end if;
         
-        if rd_ram_1 = '1' then
+        if rd_ram_1='1' then
             grid_map(8)<=dout_fifo_1;
             grid_map(7)<=grid_map(8);
             grid_map(6)<=grid_map(7);
@@ -118,7 +136,6 @@ begin
             grid_map(1)<=grid_map(2);
             grid_map(0)<=grid_map(1);
         end if;
-        
     end if;
 end process;  
 
