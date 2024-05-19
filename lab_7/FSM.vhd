@@ -93,9 +93,9 @@ begin
     end if;
 end process;
 
-process(input_pixel_cnt, input_row_cnt, input_row_up, input_pixel_up)
+process(rst_n,input_pixel_cnt, input_row_cnt, input_row_up, input_pixel_up)
 begin
-    if (stage="UU") then
+    if (rst_n='0')then
         stage<="00";
     elsif (conv_integer(input_pixel_cnt) = 3 and conv_integer(input_row_cnt) = 2) then 
         stage<="01";
