@@ -65,6 +65,9 @@ int main()
 		return -1;
 	}
 
+	XAxiDma_Reset(&ps2pl_dma);
+	while (!(XAxiDma_ResetIsDone(&ps2pl_dma))) {}
+
 	xil_printf("Initialized TX-DMA DEVICE successfully\n");
 
     // Step 2: Initialize RX-DMA Device (PL->PS)
@@ -82,8 +85,10 @@ int main()
 		return -1;
 	}
 
-	xil_printf("Initialized RX-DMA DEVICE successfully\n");
+	XAxiDma_Reset(&pl2ps_dma);
+	while (!(XAxiDma_ResetIsDone(&pl2ps_dma))) {}
 
+	xil_printf("Initialized RX-DMA DEVICE successfully\n");
 
     XTime_GetTime(&preExecCyclesFPGA);
     // Step 3 : Perform FPGA processing
