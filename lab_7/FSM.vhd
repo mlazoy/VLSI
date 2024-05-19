@@ -16,6 +16,7 @@ end finite_state_machine;
 architecture Behavioral of finite_state_machine is
 
 component counter is
+    generic (N_bits: integer:=4);
     port (clk,rst_n, stall: in std_logic;
           cnt: out std_logic_vector(N_bits-1 downto 0);
           up: out std_logic);
@@ -28,12 +29,14 @@ signal all_bits : std_logic_vector(N_bits-1 downto 0) := (others => '1');
 
 signal input_row_stall, input_row_up, input_pixel_stall, input_pixel_up, wait_for_input : std_logic;
 signal input_row_cnt, input_pixel_cnt : std_logic_vector(N_bits-1 downto 0);
-signal stage, prev_stage : std_logic_vector(1 downto 0) := "00";
+signal stage, prev_stage : std_logic_vector(1 downto 0);
 
 begin
 
 --counter to know in which phase i am in 
-input_row_counter : counter port map (
+input_row_counter : counter 
+generic map(N_bits => 4)
+port map (
     clk => clk,
     rst_n => rst_n,
     stall => input_row_stall,
@@ -41,7 +44,9 @@ input_row_counter : counter port map (
     up => input_row_up
 );
 
-input_pixel_counter : counter port map (
+input_pixel_counter : counter 
+generic map (N_bits => 4)
+port map (
     clk => clk,
     rst_n => rst_n,
     stall => input_pixel_stall,
@@ -49,9 +54,24 @@ input_pixel_counter : counter port map (
     up => input_pixel_up
 );
 
-input_pixel_stall <= not vld_in  or wait_for_input;
-input_row_stall <= not input_pixel_up;
-vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" or (conv_integer(input_pixel_cnt) = 1 and conv_integer(input_row_cnt) = 2) else '0';
+row_counter: counter generic map (N_bits => 4)
+                    port map (clk=>clk,
+                               rst_n=>rst_n,
+                               stall=>row_stall,
+                               cnt=>row_cnt,
+                               up=>row_up);
+                               
+pixel_counter: counter generic map (N_bits => 4)
+                       port map (clk=>clk,
+                                 rst_n=>rst_n,
+                                 stall=>pixel_stall,
+                                 cnt=>pixel_cnt,
+                                 up=>pixel_up);  
+
+input_pixel_stall <= not vld_in or wait_for_input;
+input_row_stall <= not input_pixel_up or not vld_in;
+vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" 
+                               or (conv_integer(input_pixel_cnt) = 1 and conv_integer(input_row_cnt) = 2) else '0';
 vld_out<='1' when (prev_stage="01" and vld_in='1') or prev_stage="10" else '0';
 ready_img <= '1' when prev_stage="10" and stage="00" else '0';
 
@@ -64,39 +84,28 @@ begin
     end if;
 end process;
 
-process(input_pixel_cnt, input_row_cnt, row_up, pixel_up)
+process(input_pixel_cnt, input_row_cnt, input_row_up, input_pixel_up)
 begin
-    if (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) then 
-        stage<= "01";
-    elsif input_pixel_cnt = all_bits and input_row_cnt = all_bits then 
-        stage<= "10";
-    elsif conv_integer(row_cnt) = 0 and conv_integer(pixel_cnt) = 0 and row_cnt_prev = all_bits and pixel_cnt_prev = all_bits then  
-        stage<= "00";
+    if (stage="UU") then
+        stage<="00";
+    elsif (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) then 
+        stage<="01";
+    elsif (input_row_up='1'and input_pixel_up = '1') then 
+        stage<="10";
+--    elsif stage="UU" then --and row_cnt_prev = all_bits and pixel_cnt_prev = all_bits then  
+--        stage<="00";
     end if;
-end process;
-
-
-row_counter: counter port map (clk=>clk,
-                               rst_n=>rst_n,
-                               stall=>row_stall,
-                               cnt=>row_cnt,
-                               up=>row_up);
-                               
-pixel_counter: counter port map (clk=>clk,
-                                 rst_n=>rst_n,
-                                 stall=>pixel_stall,
-                                 cnt=>pixel_cnt,
-                                 up=>pixel_up);   
+end process; 
                                  
 --stall if we are in the first phase then stall, and if we are in the second phase stall if valid_in = 0
 pixel_stall<='1' when (stage="00" or (vld_in='0' and stage="01")) else '0';
-row_stall<=not pixel_up;
+row_stall<=not pixel_up or not vld_in;
 row_counter_out <= row_cnt;
 pixel_counter_out <= pixel_cnt;
 pxl_case <= pixel_case;
 
 --s2p enable
-s2p_en <= '1' when ((stage="00" or stage="01") and vld_in='1') or stage="10" else '0';
+s2p_en <= '1' when (((stage="00" or stage="01") and vld_in='1') or stage="10") else '0';
 
                                  
 process(row_cnt, pixel_cnt)
@@ -138,11 +147,12 @@ end process;
 
 process(clk, rst_n)
 begin
-    if rst_n='0' then
-    elsif clk'event and clk='1' then
-            pixel_cnt_prev <= pixel_cnt;
-            row_cnt_prev <= row_cnt;
-            prev_stage <= stage;
+    if rst_n='1' then
+        if clk'event and clk='1' then
+                pixel_cnt_prev <= pixel_cnt;
+                row_cnt_prev <= row_cnt;
+                prev_stage <= stage;
+        end if;
     end if;
 end process;
                                                      

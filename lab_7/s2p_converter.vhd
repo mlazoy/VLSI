@@ -15,18 +15,17 @@ end s2p_converter;
 architecture Behavioral of s2p_converter is
 
 component fifo_generator_0 is
-  port (
-  clk : IN STD_LOGIC;
-  srst : IN STD_LOGIC;
-  din : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
-  wr_en : IN STD_LOGIC;
-  rd_en : IN STD_LOGIC;
-  dout : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
-  full : OUT STD_LOGIC;
-  --wr_ack : OUT STD_LOGIC;
-  empty : OUT STD_LOGIC;
-  valid : OUT STD_LOGIC;
-  data_count : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
+    port (
+    clk : IN STD_LOGIC;
+    srst : IN STD_LOGIC;
+    din : IN STD_LOGIC_VECTOR(7 DOWNTO 0);
+    wr_en : IN STD_LOGIC;
+    rd_en : IN STD_LOGIC;
+    dout : OUT STD_LOGIC_VECTOR(7 DOWNTO 0);
+    full : OUT STD_LOGIC;
+    empty : OUT STD_LOGIC;
+    valid : OUT STD_LOGIC;
+    data_count : OUT STD_LOGIC_VECTOR(9 DOWNTO 0)
 );
 end component;
 
@@ -96,10 +95,11 @@ begin
     if rst = '1' then 
         grid_map<=(others=>(others=>'0'));
     elsif clk'event and clk='1' then
-        if conv_integer(data_cnt_1)>=N-2 then         
+        if conv_integer(data_cnt_1)>=N-2 and en='1' then         
             rd_ram_1<='1';
             rd_ram_2<='1';
             rd_ram_3<='1';  
+
         else
             rd_ram_1<='0';
             rd_ram_2<='0';
