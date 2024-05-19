@@ -27,9 +27,9 @@ signal pixel_case: std_logic_vector(1 downto 0);
 signal row_stall, pixel_stall, row_up, pixel_up, wait_for_img: std_logic;
 signal all_bits : std_logic_vector(N_bits-1 downto 0) := (others => '1');
 
-signal input_row_stall, input_row_up, input_pixel_stall, input_pixel_up, wait_for_input : std_logic;
+signal input_row_stall, input_row_up, input_pixel_stall, input_pixel_up, wait_for_input, current_vld_out  : std_logic;
 signal input_row_cnt, input_pixel_cnt : std_logic_vector(N_bits-1 downto 0);
-signal stage, prev_stage : std_logic_vector(1 downto 0);
+signal stage, prev_stage, prev_vld_out: std_logic_vector(1 downto 0);
 
 begin
 
@@ -72,7 +72,15 @@ input_pixel_stall <= not vld_in or wait_for_input;
 input_row_stall <= not input_pixel_up or not vld_in;
 vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" 
                                or (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) else '0';
-vld_out<='1' when (prev_stage="01" and vld_in='1') or prev_stage="10" else '0';
+current_vld_out<='1' when (prev_stage="01" and vld_in='1') or (prev_stage="00" and vld_in='1' and conv_integer(input_pixel_cnt)>= 2 and conv_integer(input_row_cnt) = 2) or prev_stage="10" else '0';
+vld_out<=prev_vld_out(1);
+process(clk)
+begin
+    if rising_edge(clk) then
+        prev_vld_out(1) <= prev_vld_out(0);
+        prev_vld_out(0) <= current_vld_out;
+    end if;
+end process;
 
 ready_img <='1' when (conv_integer(row_cnt) = 0 and row_cnt_prev = all_bits) else '0'; -- TODO change this!!
 
