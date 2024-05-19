@@ -74,7 +74,7 @@ vld_grid<='1' when (stage="01" and vld_in='1') or stage="10"
                                or (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) else '0';
 vld_out<='1' when (prev_stage="01" and vld_in='1') or prev_stage="10" else '0';
 
-ready_img <= '1' when stage="10" else '0'; -- TODO change this!!
+ready_img <='1' when (conv_integer(row_cnt) = 0 and row_cnt_prev = all_bits) else '0'; -- TODO change this!!
 
 process(new_image, input_row_cnt, input_pixel_cnt) 
 begin
@@ -100,7 +100,7 @@ end process;
                                  
 --stall if we are in the first phase then stall, and if we are in the second phase stall if valid_in = 0
 pixel_stall<='1' when (stage="00" or (vld_in='0' and stage="01")) else '0';
-row_stall<=not pixel_up or not vld_in;
+row_stall<='1' when (pixel_up='0' or (vld_in = '0' and stage="01")) else '0';
 row_counter_out <= row_cnt;
 pixel_counter_out <= pixel_cnt;
 pxl_case <= pixel_case;
