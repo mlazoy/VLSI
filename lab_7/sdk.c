@@ -19,12 +19,35 @@
 #define TX_BUFFER (XPAR_DDR_MEM_BASEADDR + 0x20000000) // 0 + 512MByte
 #define RX_BUFFER (XPAR_DDR_MEM_BASEADDR + 0x30000000) // 0 + 768MByte
 
-#define size_N 1024
+#define size_N 16
 #define PXL_LEN 8
 
 /* User application global variables & defines */
+u8 image[size_N][size_N] ;
+
+u8 test_data[] = {
+		#include "bayer16x16_sdk.txt"
+		};
+
+void read_input(){
+	for (unsigned i=0; i<size_N; i++){
+		for (unsigned j=0; j<size_N; j++){
+			image[i][j] = test_data[i*size_N+j];
+		}
+	}
+}
+
+void print_data(u8 my_arr[size_N][size_N]){
+	for (unsigned i=0; i<size_N; i++){
+		for (unsigned j=0; j<size_N; j++){
+			printf("%huh ",my_arr[i][j]);
+		}
+		printf("\n");
+	}
+}
+
+//for cpu processing
 u8 grid[3][3];
-u8 image[size_N][size_N];
 u32 rgb_values[size_N][size_N];
 
 u32 calc_avg(int row, int pixel){
@@ -67,27 +90,9 @@ u32 calc_avg(int row, int pixel){
 void debayer(void){
 	for (unsigned i=0; i<size_N; ++i){
 		for (unsigned j=0; j<size_N; ++j){
-			rgb_values[i][j] = calc_avg(i,j,image);
+			rgb_values[i][j] = calc_avg(i,j);
 		}
 	}
-}
-
-void read_input_from_file(){
-	FILE *image;
-	char pixel_bits[PXL_LEN];
-
-	image = fopen("debayer_16x16exam.txt", "r");
-	if (image==NULL){
-		perror("error opening pixels file");
-		exit(EXIT_FAILURE);
-	}
-
-	for (unsigned i=0; i<SIZE_N; ++i){
-		for (unsigned j=0; j<SIZE_N; ++j){
-			pixels[i][j] = fgets(pixel_bits, sizeof(pixel_bits),image);
-		}
-	}
-	fclose(image);
 }
 
 int main()
@@ -103,6 +108,10 @@ int main()
 	// User application local variables
 
 	init_platform();
+
+	//read input from file and print pixels
+	read_input();
+	print_data(image);
 
     // Step 1: Initialize TX-DMA Device (PS->PL)
 	XAxiDma_Config *tx_dma_conf;
@@ -146,7 +155,10 @@ int main()
 
     XTime_GetTime(&preExecCyclesSW);
     // Step 5: Perform SW processing
+    debayer();
     XTime_GetTime(&postExecCyclesSW);
+    //print results
+    print_data(rgb_values);
 
     // Step 6: Compare FPGA and SW results
     //     6a: Report total percentage error
