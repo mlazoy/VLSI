@@ -53,19 +53,19 @@ signal grid_map: grid3x3;
 signal all_bits: std_logic_vector(N_bits-1 downto 0):= (others=>'1');
 signal N : integer := 2**N_bits;
 
---signal buffered_pixel: std_logic_vector(7 downto 0);
+signal buffered_pixel: std_logic_vector(7 downto 0);
 
 begin
 
---INPUT_BUFF: dff8 port map (clk=>clk,
---                           rst=>rst,
---                           D=>pixel_in,
---                           Q=>buffered_pixel
---                           );
+INPUT_BUFF: dff8 port map (clk=>clk,
+                           rst=>rst,
+                           D=>pixel_in,
+                           Q=>buffered_pixel
+                           );
 
 RAM_FIFO_1: fifo_generator_0 port map(clk=>clk,
                                       srst=>rst,
-                                      din=>pixel_in,
+                                      din=>buffered_pixel,
                                       wr_en=>wr_ram_1,
                                       rd_en=>rd_ram_1,
                                       dout=>dout_fifo_1,

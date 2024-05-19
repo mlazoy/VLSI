@@ -71,9 +71,10 @@ pixel_counter: counter generic map (N_bits => 4)
 input_pixel_stall <= not vld_in or wait_for_input;
 input_row_stall <= not input_pixel_up or not vld_in;
 vld_grid<='1' when (stage="01" and vld_in='1') or stage="10" 
-                               or (conv_integer(input_pixel_cnt) = 1 and conv_integer(input_row_cnt) = 2) else '0';
+                               or (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) else '0';
 vld_out<='1' when (prev_stage="01" and vld_in='1') or prev_stage="10" else '0';
-ready_img <= '1' when prev_stage="10" and stage="00" else '0';
+
+ready_img <= '1' when stage="10" else '0'; -- TODO change this!!
 
 process(new_image, input_row_cnt, input_pixel_cnt) 
 begin
@@ -88,7 +89,7 @@ process(input_pixel_cnt, input_row_cnt, input_row_up, input_pixel_up)
 begin
     if (stage="UU") then
         stage<="00";
-    elsif (conv_integer(input_pixel_cnt) = 2 and conv_integer(input_row_cnt) = 2) then 
+    elsif (conv_integer(input_pixel_cnt) = 3 and conv_integer(input_row_cnt) = 2) then 
         stage<="01";
     elsif (input_row_up='1'and input_pixel_up = '1') then 
         stage<="10";
