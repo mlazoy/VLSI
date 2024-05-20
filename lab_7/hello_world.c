@@ -53,7 +53,7 @@ int main()
 	XAxiDma_Config *ps2pl_config;
 	XAxiDma ps2pl_dma;
 
-	ps2pl_config = XAxiDma_LookupConfigBaseAddr(XPAR_PS2PL_DMA_BASEADDR);
+	ps2pl_config = XAxiDma_LookupConfig(TX_DMA_ID);
 	//if device address not found returns nullptr
 	if (!ps2pl_config) {
 		xil_printf("error creating configuration for tx_dma\n");
@@ -68,13 +68,18 @@ int main()
 	XAxiDma_Reset(&ps2pl_dma);
 	while (!(XAxiDma_ResetIsDone(&ps2pl_dma))) {}
 
+	XAxiDma_IntrDisable(&ps2pl_dma, XAXIDMA_IRQ_ALL_MASK, // Disable interrupts, we use polling mode
+	                            XAXIDMA_DEVICE_TO_DMA);
+	XAxiDma_IntrDisable(&ps2pl_dma, XAXIDMA_IRQ_ALL_MASK,
+	                            XAXIDMA_DMA_TO_DEVICE);
+
 	xil_printf("Initialized TX-DMA DEVICE successfully\n");
 
     // Step 2: Initialize RX-DMA Device (PL->PS)
 	XAxiDma_Config *pl2ps_config;
 	XAxiDma pl2ps_dma;
 
-	pl2ps_config = XAxiDma_LookupConfigBaseAddr(XPAR_PL2PS_DMA_BASEADDR);
+	pl2ps_config = XAxiDma_LookupConfig(RX_DMA_ID);
 	if (!pl2ps_config) {
 		xil_printf("error creating configuration for rx_dma\n");
 		return -1;
@@ -88,13 +93,18 @@ int main()
 	XAxiDma_Reset(&pl2ps_dma);
 	while (!(XAxiDma_ResetIsDone(&pl2ps_dma))) {}
 
+	XAxiDma_IntrDisable(&pl2ps_dma, XAXIDMA_IRQ_ALL_MASK, // Disable interrupts, we use polling mode
+		                            XAXIDMA_DEVICE_TO_DMA);
+	XAxiDma_IntrDisable(&pl2ps_dma, XAXIDMA_IRQ_ALL_MASK,
+		                            XAXIDMA_DMA_TO_DEVICE);
+
 	xil_printf("Initialized RX-DMA DEVICE successfully\n");
 
     XTime_GetTime(&preExecCyclesFPGA);
     // Step 3 : Perform FPGA processing
     //      3a: Setup RX-DMA transaction
 
-    int status = XAxiDma_SimpleTransfer(&pl2ps_dma, (u32)output_buffer, sizeof(u32)*N*N, XAXIDMA_DEVICE_TO_DMA);
+    int status = XAxiDma_SimpleTransfer(&pl2ps_dma, (UINTPTR)output_buffer, 4*N*N, XAXIDMA_DEVICE_TO_DMA);
     if (status != XST_SUCCESS) {
     		xil_printf("error when trying to set up read to dma\n");
     		return -1;
@@ -104,7 +114,7 @@ int main()
 
     //      3b: Setup TX-DMA transaction
 
-    status = XAxiDma_SimpleTransfer(&ps2pl_dma, (u32)input_buffer, sizeof(u8)*N*N, XAXIDMA_DMA_TO_DEVICE);
+    status = XAxiDma_SimpleTransfer(&ps2pl_dma, (UINTPTR)input_buffer, N*N, XAXIDMA_DMA_TO_DEVICE);
 	if (status != XST_SUCCESS) {
 		xil_printf("error when trying to send data to dma\n");
 		return -1;
@@ -113,14 +123,14 @@ int main()
 	xil_printf("Successfully tried to sent the pixels to dma\n");
 
     //      3c: Wait for TX-DMA & RX-DMA to finish
-	sleep(3);
+	//sleep(10);
 	//if they are busy they are not done sending and receiving
-	/*
+
 	while (XAxiDma_Busy(&ps2pl_dma, XAXIDMA_DMA_TO_DEVICE)) {}
 	xil_printf("Transfered all pixels\n");
 	while (XAxiDma_Busy(&pl2ps_dma, XAXIDMA_DEVICE_TO_DMA)) {}
 	xil_printf("Received all pixels\n");
-	*/
+
 
 	int sent = Xil_In32(TX_DMA_MM2S_LENGTH_ADDR), received = Xil_In32(RX_DMA_S2MM_LENGTH_ADDR);
 	xil_printf("Sent %d bytes to pl, received %d bytes from pl which means %d pixels received\n", sent, received, received / 4);
@@ -190,6 +200,7 @@ int main()
     	hardware_G = (output_buffer[i] & 0x0000FF00) >> 8;
     	hardware_B = (uint8_t) (output_buffer[i] & 0x000000FF);
     	xil_printf("Hardware: (%d,%d,%d), Software: (%d,%d,%d)\n", hardware_R, hardware_G, hardware_B, output_R[i], output_G[i], output_B[i]);
+    	xil_printf("Hardware: %d\n", output_buffer[i]);
     	if (output_R[i] == hardware_R && output_G[i] == hardware_G && output_B[i] == hardware_B) continue;
     	else {
     		++errors;

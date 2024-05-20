@@ -101,7 +101,8 @@ architecture arch of dvlsi2021_lab5_top is
   signal tmp_keep_ps2pl : std_logic_vector(0 downto 0);
   signal tmp_keep_pl2ps : std_logic_vector(3 downto 0);
   --for our component
-  signal prev_tvalid, new_img_axi : std_logic;
+  signal prev_tvalid : std_logic := '0'; 
+  signal new_img_axi : std_logic := '0';
   signal Rout, Gout, Bout : std_logic_vector(7 downto 0);
   
 
@@ -144,7 +145,7 @@ begin
               ------------------------------------------------------------------------------------
               -- ACCELERATOR AXI4-STREAM MASTER INTERFACE TO PL2P2-DMA AXI4-STREAM SLAVE INTERFACE
               S_AXIS_S2MM_FROM_ACCELERATOR_tdata  => db_data_out,
-              S_AXIS_S2MM_FROM_ACCELERATOR_tkeep  => tmp_keep_pl2ps,
+              S_AXIS_S2MM_FROM_ACCELERATOR_tkeep  => "1111",
               S_AXIS_S2MM_FROM_ACCELERATOR_tlast  => db_tlast_pl_to_ps,
               S_AXIS_S2MM_FROM_ACCELERATOR_tready => db_tready_read,
               S_AXIS_S2MM_FROM_ACCELERATOR_tvalid => db_tvalid_read
@@ -153,7 +154,6 @@ begin
 ----------------------------
 -- COMPONENTS      
 db_tready_write <= '1';
-tmp_keep_pl2ps <= db_tvalid_read & db_tvalid_read & db_tvalid_read & db_tvalid_read;
 DEBAYER : debayering_filter port map (
     clk => ACLK,
     rst_n => ARESETN(0),
